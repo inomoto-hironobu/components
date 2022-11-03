@@ -7,7 +7,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -->
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:framexs="urn:framexs" xmlns:t="urn:template" lang="ja">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:framexs="urn:framexs" xmlns:yc="urn:yaohata-components" prefix="og:https://ogp.me/ns#" lang="ja">
 <head>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -19,7 +19,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 <meta charset="UTF-8"/>
 <meta framexs:fix="" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-
+<meta property="og:title" content=""/>
+<meta property="og:description" content=""/>
+<meta property="og:type" content=""/>
+<meta property="og:image" content=""/>
+<meta property="og:url" content=""/>
 <title><framexs:title/> - 八百幡コンポーネンツ</title>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"/>
 
@@ -28,7 +32,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 <yaohata-setting base="/components/sef/">
-
+<ogp>
+<template>ogp-template</template>
+</ogp>
 </yaohata-setting>
 </head>
 <body class="bg-light">
@@ -143,24 +149,20 @@ col d-md-none d-block
 </div>
 <!-- /container -->
 <footer id="footer" class="bg-secondary text-white">
-
-
+<div><a href="http://inomoto-hironobu.github.io/">Framexs</a></div>
 <div style="text-align:center">八百幡</div>
 </footer>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
-<template>
-
-</template>
-<template id="ogp-template" xmlns:t="urn:template">
+<template id="ogp-template">
 <div class="card" style="max-width:32rem;margin:1rem auto;">
+<img yc:image="" class="card-img-top" alt=""/>
 <div class="card-body">
-<h5 class="card-title"><t:title/></h5>
-<h6 class="card-subtitle mb-2 text-muted"><t:subtitle/></h6>
-<p class="card-text"><t:text/></p>
-<a t:href="" t:src="" href="#" class="btn btn-primary">ページを見る</a>
+<h5 class="card-title"><yc:title/></h5>
+<p class="card-text"><yc:description/></p>
+<a yc:url="" class="btn btn-primary">ページを見る</a>
 </div>
 </div>
 </template>
@@ -185,8 +187,8 @@ error
 
 <template id="quote-template">
 <blockquote class="internal-quote">
-<div class="target"><t:content/></div>
-<div class="citation"><cite><a t:path=""><t:title/></a></cite></div>
+<div class="target"><yc:content/></div>
+<div class="citation"><cite><a yc:path=""><yc:title/></a></cite></div>
 </blockquote>
 </template>
 <script src="SaxonJS2.js"></script>

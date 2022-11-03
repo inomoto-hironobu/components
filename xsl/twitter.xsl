@@ -2,13 +2,13 @@
 <!-- xmlns:tとした場合 -->
 <xsl:stylesheet version="3.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:t="urn:template"
+  xmlns:yc="urn:yaohata-components"
   xpath-default-namespace="http://www.w3.org/1999/xhtml">
   <xsl:output method="html" />
 
   <xsl:param name="data-url" />
 
-  <xsl:template match="@t:data-url">
+  <xsl:template match="@yc:data-url">
     <xsl:attribute name="data-url">
       <xsl:value-of select="$data-url" />
     </xsl:attribute>
