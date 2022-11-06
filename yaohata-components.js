@@ -9,22 +9,6 @@ yaohata.nsResolver = function nsResolver(prefix) {
 
 const parser = new DOMParser();
 
-const settings = {
-	base:null,
-	children:null
-}
-
-class Setting extends HTMLElement {
-	constructor() {
-		super();
-		settings.base = this.getAttribute("base");
-		settings.children = this.childNodes;
-		console.log(settings);
-	}
-}
-customElements.define("yaohata-setting",Setting);
-
-
 /*開発中*/
 class Version extends HTMLElement {
 	constructor() {
@@ -161,27 +145,35 @@ class Source extends HTMLElement {
 }
 
 function exec(arg){
+	var s = new XMLSerializer();
+	var d = document;
+	
 	//文字列のHTMLをいったんtemplate要素を作って挿入し、DocumentFragmentを取り出す
+
 	let string = "<template xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:yc=\"urn:yaohata-components\">"+arg.defaultTemplate+"</template>";
 	let temp = parser.parseFromString(string,"application/xml");
-	console.log(temp.documentElement);
 	let defaultTemplate = temp.documentElement.content;
-	document.importNode(defaultTemplate,true);
 
 	//カスタム要素にtemplate属性がある場合を優先し、次にsettings要素での設定を見て、それでなければデフォルトのテンプレートを使う
 	let templateName = arg.element.getAttribute("template");
+	let template;
 	if(!templateName) {
-		console.log(settings);
-		settings.children.forEach((e)=>{
-			if(e.nodeName == arg.name && e.querySelector("template")) {
-				templateName = e.querySelector("tempalte").textContent;
-			}
-		});
+		if(setting.c[arg.name] && setting.c[arg.name].template){
+			let t = document.getElementById(setting.c[arg.name].template).content;
+			var str = s.serializeToString(t);
+			let string = "<template xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:yc=\"urn:yaohata-components\">"+str+"</template>";
+			const dom = parser.parseFromString(string,"application/xml");
+			const f = dom.documentElement.content;
+			template = f;
+		} else {
+			template = defaultTemplate;
+		}
+	} else {
+		template = defaultTemplate;
 	}
-	let template = templateName?document.getElementById(templateName).content:defaultTemplate;
-
+	console.log(template);
 	const options = {
-		stylesheetLocation: settings.base+arg.name+".sef.json",
+		stylesheetLocation: setting.base+arg.name+".sef.json",
 		//template要素はからのためcontentプロパティでDocumentFragmentを取得する
 		sourceNode: template,
 		stylesheetParams:arg.params,
@@ -201,6 +193,7 @@ function exec(arg){
 				.appendChild(d.principalResult);
 				break;
 			default:
+				console.log(d.principalResult);
 				arg.element.replaceWith(d.principalResult);
 		}
 	 }).catch(v=>{
