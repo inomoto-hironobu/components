@@ -12,6 +12,11 @@
   <xsl:variable name="source" select="document($path,.)"></xsl:variable>
   <xsl:variable name="ogpprefix" select="yc:ogpprefix($source/html/@prefix)"/>
 
+  <xsl:template match="@yc:path">
+    <xsl:attribute name="href">
+      <xsl:value-of select="$path"></xsl:value-of>
+    </xsl:attribute>
+  </xsl:template>
   <xsl:template match="@yc:url">
     <xsl:attribute name="href">
       <xsl:value-of select="$source//meta[@property = yc:check('url')]/@content"></xsl:value-of>

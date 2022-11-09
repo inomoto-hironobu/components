@@ -31,11 +31,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
-<yaohata-setting base="/components/sef/">
-<ogp>
-<template>ogp-template</template>
-</ogp>
-</yaohata-setting>
+<script>
+const setting = {
+  base:"/components/sef/",
+  c:{
+    ogp:{
+      template:"ogp-template"
+    }
+  }
+}
+</script>
 </head>
 <body class="bg-light">
 
