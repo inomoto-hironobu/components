@@ -43,9 +43,12 @@ class Twitter extends HTMLElement {
 		const arg = {
 			element:this,
 			name:"twitter",
-			defaultTemplate:`<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" yc:data-url="" data-show-count="false">Tweet</a><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>`,
+			sef:"sns.sef.json",
+			defaultTemplate:`<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" yc:data-url="{url}" data-show-count="false">Tweet</a><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>`,
 			params:{
-				"data-url":document.URL
+				"url":document.URL,
+				"title":document.querySelector('title').textContent,
+				"text":this.getAttribute("text")
 			}
 		 }
 		 exec(arg);
@@ -61,9 +64,12 @@ class Facebook extends HTMLElement {
 		const arg = {
 			element:this,
 			name:"facebook",
-			defaultTemplate:`<div class="fb-share-button" yc:data-href="" data-layout="button_count" data-size="small"><a target="_blank" yc:href="" class="fb-xfbml-parse-ignore">シェアする</a></div>`,
+			sef:"sns.sef.json",
+			defaultTemplate:`<div class="fb-share-button" yc:data-href="{url}" data-layout="button_count" data-size="small"><a target="_blank" yc:href="https://www.facebook.com/sharer/sharer.php?u={url}" class="fb-xfbml-parse-ignore">シェアする</a></div>`,
 			params:{
-				"url":document.URL
+				"url":document.URL,
+				"title":document.querySelector('title').textContent,
+				"text":this.getAttribute("text")
 			}
 		 }
 		 exec(arg);
@@ -78,17 +84,41 @@ class Line extends HTMLElement {
 		const arg = {
 			element:this,
 			name:"line",
-			defaultTemplate:`<div class="line-it-button" data-lang="ja" data-type="share-a" data-env="REAL" yc:data-url="" data-color="default" data-size="small" data-count="true" data-ver="3" style="display: none;"></div>
+			sef:"sns.sef.json",
+			defaultTemplate:`<div class="line-it-button" data-lang="ja" data-type="share-a" data-env="REAL" yc:data-url="{url}" data-color="default" data-size="small" data-count="true" data-ver="3" style="display: none;"></div>
 			<script src="https://www.line-website.com/social-plugins/js/thirdparty/loader.min.js" async="async" defer="defer"></script>`,
 			params:{
-				"data-url":document.URL,
-				"text":""
+				"url":document.URL,
+				"title":document.querySelector('title').textContent,
+				"text":this.getAttribute("text")
 			}
 		 }
 		 exec(arg);
 	}
 }
 customElements.define("line-button",Line);
+
+class LinkedIn extends HTMLElement {
+	constructor() {
+		super();
+		
+		const arg = {
+			element:this,
+			name:"linkedin",
+			sef:"sns.sef.json",
+			defaultTemplate:`<script src="https://platform.linkedin.com/in.js" type="text/javascript"></script>
+			<script type="IN/Share" yc:data-url="{url}"></script><p><a href=""></a></p>
+			`,
+			params:{
+				"url":document.URL,
+				"title":document.querySelector('title').textContent,
+				"text":this.getAttribute("text")
+			}
+		 }
+		 exec(arg);
+	}
+}
+customElements.define("linkedin-button",LinkedIn);
 
 /*OGPを表示する*/
 class Ogp extends HTMLElement {
@@ -160,7 +190,7 @@ function exec(arg){
 	if(!templateName) {
 		if(setting.c[arg.name] && setting.c[arg.name].template){
 			let t = document.getElementById(setting.c[arg.name].template).content;
-			var str = s.serializeToString(t);
+			let str = s.serializeToString(t);
 			let string = "<template xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:yc=\"urn:yaohata-components\">"+str+"</template>";
 			const dom = parser.parseFromString(string,"application/xml");
 			const f = dom.documentElement.content;
@@ -169,11 +199,15 @@ function exec(arg){
 			template = defaultTemplate;
 		}
 	} else {
-		template = defaultTemplate;
+		let t = document.getElementById(templateName).content;
+		let str = s.serializeToString(t);
+		let string = "<template xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:yc=\"urn:yaohata-components\">"+str+"</template>";
+		const dom = parser.parseFromString(string,"application/xml");
+		const f = dom.documentElement.content;
+		template = f;
 	}
-	console.log(template);
 	const options = {
-		stylesheetLocation: setting.base+arg.name+".sef.json",
+		stylesheetLocation: setting.base+arg.sef,
 		//template要素はからのためcontentプロパティでDocumentFragmentを取得する
 		sourceNode: template,
 		stylesheetParams:arg.params,
