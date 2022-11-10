@@ -128,6 +128,7 @@ class Ogp extends HTMLElement {
 		const arg = {
 			element:this,
 			name:"ogp",
+			sef:"ogp.sef.json",
 			defaultTemplate:`<div><img yc:image="" width="64"/><a yc:url=""><yc:title/></a><div><yc:description/></div></div>`,
 			params:{
 				"path":this.getAttribute("path")
@@ -145,6 +146,7 @@ class Quote extends HTMLElement {
 		const arg = {
 			element:this,
 			name:"quote",
+			sef:"quote.sef.json",
 			defaultTemplate:`<blockquote><yc:content/><p><cite><a yc:url=""><yc:title/></a></cite></p></blockquote>`,
 			params:{
 				"path":this.getAttribute("path"),
