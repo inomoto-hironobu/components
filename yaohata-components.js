@@ -1,13 +1,44 @@
 const yaohata = {};
 yaohata.ns = {
-	'' : 'http://www.w3.org/1999/xhtml',
-	'mathml': 'http://www.w3.org/1998/Math/MathML'
+	'h' : 'http://www.w3.org/1999/xhtml',
+	'mathml': 'http://www.w3.org/1998/Math/MathML',
+	's':'urn:yaohata-components-setting'
 };
 yaohata.nsResolver = function nsResolver(prefix) {
 	return yaohata.ns[prefix] || null;
 };
 
 const parser = new DOMParser();
+const setting_loc = document.evaluate("//link[@rel='yaohata-components-setting']/@href",document,yaohata.nsResolver,XPathResult.STRING_TYPE,null).stringValue;
+let setting;
+let sefbase;
+function get(tag,key){
+	if(setting){
+		return setting.evaluate("/s:setting/s:"+tag+"/s:"+key+"/text()",setting,yaohata.nsResolver,XPathResult.STRING_TYPE,null).stringValue;
+	} else {
+		fetch(setting_loc)
+		.then((res)=>parser.parseFromString(res.text(),"application/xml"))
+		.then((dom)=>{
+			setting = dom;
+			return get(tag,key);
+		});
+	}
+}
+fetch(setting_loc)
+.then((res)=>res.text())
+.then((text)=>{
+	setting = parser.parseFromString(text,"application/xml");
+	sefbase = setting.evaluate("/s:setting/@sefbase",setting,yaohata.nsResolver,XPathResult.STRING_TYPE,null).stringValue;
+	customElements.define("the-description",Description);
+	customElements.define("the-modified",Modified);
+	customElements.define(TwitterButton.name,TwitterButton);
+	customElements.define("facebook-button",FacebookButton);
+	customElements.define("line-button",LineButton);
+	customElements.define("linkedin-button",LinkedInButton);
+	customElements.define("internal-quote",InternalQuote);
+	customElements.define("internal-ogp",InternalOgp);
+})
+.catch((data)=>console.error(data));
 
 /*開発中*/
 class Version extends HTMLElement {
@@ -24,7 +55,7 @@ class Description extends HTMLElement {
 		this.replaceWith(document.createTextNode(value));
 	}
 }
-customElements.define("the-description",Description);
+
 
 /*開発中*/
 class Modified extends HTMLElement {
@@ -34,15 +65,15 @@ class Modified extends HTMLElement {
 		this.replaceWith(document.createTextNode(value));
 	}
 }
-customElements.define("the-modified",Modified);
 
-class Twitter extends HTMLElement {
+
+class TwitterButton extends HTMLElement {
 	constructor() {
 		super();
 
 		const arg = {
 			element:this,
-			name:"twitter",
+			name:"twitter-button",
 			sef:"sns.sef.json",
 			defaultTemplate:`<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" yc:data-url="{url}" data-show-count="false">Tweet</a><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>`,
 			params:{
@@ -53,10 +84,11 @@ class Twitter extends HTMLElement {
 		 }
 		 exec(arg);
 	}
+	static name = "twitter-button";
 }
-customElements.define("twitter-button",Twitter);
 
-class Facebook extends HTMLElement {
+
+class FacebookButton extends HTMLElement {
 
 	constructor() {
 		super();
@@ -75,9 +107,9 @@ class Facebook extends HTMLElement {
 		 exec(arg);
 	}
 }
-customElements.define("facebook-button",Facebook);
 
-class Line extends HTMLElement {
+
+class LineButton extends HTMLElement {
 	constructor() {
 		super();
 		
@@ -96,9 +128,9 @@ class Line extends HTMLElement {
 		 exec(arg);
 	}
 }
-customElements.define("line-button",Line);
 
-class LinkedIn extends HTMLElement {
+
+class LinkedInButton extends HTMLElement {
 	constructor() {
 		super();
 		
@@ -118,16 +150,44 @@ class LinkedIn extends HTMLElement {
 		 exec(arg);
 	}
 }
-customElements.define("linkedin-button",LinkedIn);
+
+
+class InternalLink extends HTMLElement {
+	constructor(){
+		super();
+		const path = this.getAttribute("path");
+		
+		fetch(path)
+		.then((response)=>response.text())
+		.then((data)=>{
+			const html = parser.parseFromString(data,"text/html");
+			const a = document.createElement("a");
+			a.setAttribute("href",path);
+			const title = html.evaluate("//title/text()",html,null,XPathResult.STRING_TYPE,null).stringValue;
+			a.appendChild(document.createTextNode(title));
+			console.log(title);
+			this.replaceWith(a);
+		});
+		
+	}
+}
+customElements.define("internal-link",InternalLink);
+
+class FigureImage extends HTMLElement {
+	constructor(){
+		super();
+	}
+}
+//customElements.define("figure-image",FigureImage);
 
 /*OGPを表示する*/
-class Ogp extends HTMLElement {
+class InternalOgp extends HTMLElement {
 	constructor() {
 		super();
 
 		const arg = {
 			element:this,
-			name:"ogp",
+			name:"internal-ogp",
 			sef:"ogp.sef.json",
 			defaultTemplate:`<div><img yc:image="" width="64"/><a yc:url=""><yc:title/></a><div><yc:description/></div></div>`,
 			params:{
@@ -137,9 +197,9 @@ class Ogp extends HTMLElement {
 		exec(arg);
 	}
 }
-customElements.define("internal-ogp",Ogp);
 
-class Quote extends HTMLElement {
+
+class InternalQuote extends HTMLElement {
 	constructor(){
 		super();
 		
@@ -156,9 +216,9 @@ class Quote extends HTMLElement {
 		exec(arg);
 	}
 }
-customElements.define("internal-quote",Quote);
 
-class Source extends HTMLElement {
+
+class InternalSource extends HTMLElement {
 	constructor(){
 		super();
 
@@ -190,8 +250,10 @@ function exec(arg){
 	let templateName = arg.element.getAttribute("template");
 	let template;
 	if(!templateName) {
-		if(setting.c[arg.name] && setting.c[arg.name].template){
-			let t = document.getElementById(setting.c[arg.name].template).content;
+		console.log(get(arg.name,"template"));
+		let id = get(arg.name,"template");
+		if(id){
+			let t = document.getElementById(id).content;
 			let str = s.serializeToString(t);
 			let string = "<template xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:yc=\"urn:yaohata-components\">"+str+"</template>";
 			const dom = parser.parseFromString(string,"application/xml");
@@ -209,7 +271,7 @@ function exec(arg){
 		template = f;
 	}
 	const options = {
-		stylesheetLocation: setting.base+arg.sef,
+		stylesheetLocation: sefbase+arg.sef,
 		//template要素はからのためcontentプロパティでDocumentFragmentを取得する
 		sourceNode: template,
 		stylesheetParams:arg.params,
@@ -229,7 +291,6 @@ function exec(arg){
 				.appendChild(d.principalResult);
 				break;
 			default:
-				console.log(d.principalResult);
 				arg.element.replaceWith(d.principalResult);
 		}
 	 }).catch(v=>{
