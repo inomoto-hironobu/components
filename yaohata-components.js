@@ -207,7 +207,7 @@ class InternalQuote extends HTMLElement {
 			element:this,
 			name:"quote",
 			sef:"quote.sef.json",
-			defaultTemplate:`<blockquote><yc:content/><p><cite><a yc:url=""><yc:title/></a></cite></p></blockquote>`,
+			defaultTemplate:`<blockquote><yc:content/><p><cite><a yc:href="{path}"><yc:title/></a></cite></p></blockquote>`,
 			params:{
 				"path":this.getAttribute("path"),
 				"target":this.getAttribute("target")

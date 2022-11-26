@@ -11,16 +11,29 @@
   <xsl:param name="target"/>
   <xsl:variable name="ref" select="document($path,.)"/>
 
-  <xsl:template match="@yc:href">
-    <xsl:attribute name="href">
-      <xsl:value-of select="$path"/>
+  <xsl:template match="@yc:*">
+    <xsl:attribute name="{local-name()}">
+      <xsl:analyze-string select="." regex="\{{.+?\}}">
+        <xsl:matching-substring>
+          <xsl:message><xsl:value-of select="."/></xsl:message>
+          <xsl:choose>
+            <xsl:when test=". = '{path}'">
+              <xsl:sequence select="$path"/>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:matching-substring>
+        <xsl:non-matching-substring>
+          <xsl:sequence select="."/>
+        </xsl:non-matching-substring>
+      </xsl:analyze-string>
     </xsl:attribute>
   </xsl:template>
+
   <xsl:template match="yc:content">
     <xsl:copy-of select="$ref//*[@id=$target]/*"></xsl:copy-of>
   </xsl:template>
   <xsl:template match="yc:title">
-    <xsl:value-of select="$ref/html/meta/title[1]"/>
+    <xsl:value-of select="$ref/html/head/title"/>
   </xsl:template>
 
   <xsl:template match="@*|node()">
