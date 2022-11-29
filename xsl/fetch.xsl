@@ -9,7 +9,7 @@
 
   <xsl:param name="path" />
   <xsl:param name="target"/>
-  <xsl:variable name="ref" select="document($path,.)"/>
+  <xsl:param name="document"/>
 
   <xsl:template match="@yc:*">
     <xsl:attribute name="{local-name()}">
@@ -19,6 +19,9 @@
           <xsl:choose>
             <xsl:when test=". = '{path}'">
               <xsl:sequence select="$path"/>
+            </xsl:when>
+            <xsl:when test=". = '{title}'">
+              <xsl:sequence select="$document/html/head/title"/>
             </xsl:when>
           </xsl:choose>
         </xsl:matching-substring>
@@ -30,10 +33,10 @@
   </xsl:template>
 
   <xsl:template match="yc:content">
-    <xsl:copy-of select="$ref//*[@id=$target]/*"></xsl:copy-of>
+    <xsl:copy-of select="$document//*[@id=$target]/*"></xsl:copy-of>
   </xsl:template>
   <xsl:template match="yc:title">
-    <xsl:value-of select="$ref/html/head/title"/>
+    <xsl:value-of select="$document/html/head/title"/>
   </xsl:template>
 
   <xsl:template match="@*|node()">

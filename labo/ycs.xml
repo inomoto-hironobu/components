@@ -1,0 +1,5 @@
+<setting xmlns="urn:yaohata-components-setting" sefbase="/components/sef/">
+    <ogp>
+        <template>test</template>
+    </ogp>
+</setting>

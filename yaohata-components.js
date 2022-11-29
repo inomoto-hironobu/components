@@ -36,6 +36,7 @@ fetch(setting_loc)
 	customElements.define("line-button",LineButton);
 	customElements.define("linkedin-button",LinkedInButton);
 	customElements.define("internal-quote",InternalQuote);
+	customElements.define("internal-fetch",InternalFetch);
 	customElements.define("internal-ogp",InternalOgp);
 })
 .catch((data)=>console.error(data));
@@ -47,25 +48,43 @@ class Version extends HTMLElement {
 	}
 }
 
-/*meta name="description"の表示*/
-class Description extends HTMLElement {
-	constructor() {
+class LinkURL extends HTMLElement {
+	constructor(){
 		super();
-		const value = document.evaluate("//meta[@name='description']/@content",document,yaohata.nsResolver,XPathResult.STRING_TYPE,null).stringValue;
-		this.replaceWith(document.createTextNode(value));
+		const a = document.createElement("a");
+		a.setAttribute("href",this.textContent);
+		a.appendChild(document.createTextNode(this.textContent));
+		for(let attr of this.getAttributeNames()) {
+			a.setAttributeNode(attr);
+		}
+		this.replaceWith(a);
 	}
 }
+customElements.define("link-url",LinkURL);
 
-
-/*開発中*/
-class Modified extends HTMLElement {
+/*meta name="**"の表示*/
+class MetaContent extends HTMLElement {
 	constructor() {
 		super();
-		const value = document.evaluate("//meta[@name='modified']/@content",document,yaohata.nsResolver,XPathResult.STRING_TYPE,null).stringValue;
-		this.replaceWith(document.createTextNode(value));
+		const elem = this;
+		const value = function(dom){
+			return dom.evaluate("//meta[@name='"+elem.getAttribute("name")+"']/@content",dom,yaohata.nsResolver,XPathResult.STRING_TYPE,null).stringValue;
+		}
+		const path = this.getAttribute("path");
+		let dom;
+		if(path) {
+			fetch(path)
+			.then((response)=>response.text())
+			.then((data)=>{
+				//テキストからHTMLをパースし、value関数で値を取得、テキストノードを作り、置き換える
+				this.replaceWith(document.createTextNode(value(parser.parseFromString(data,"text/html"))));
+			});
+		} else {
+			this.replaceWith(document.createTextNode(value(document)));
+		}
 	}
 }
-
+customElements.define("meta-content",MetaContent);
 
 class TwitterButton extends HTMLElement {
 	constructor() {
@@ -151,34 +170,38 @@ class LinkedInButton extends HTMLElement {
 	}
 }
 
-
-class InternalLink extends HTMLElement {
-	constructor(){
-		super();
-		const path = this.getAttribute("path");
-		
-		fetch(path)
-		.then((response)=>response.text())
-		.then((data)=>{
-			const html = parser.parseFromString(data,"text/html");
-			const a = document.createElement("a");
-			a.setAttribute("href",path);
-			const title = html.evaluate("//title/text()",html,null,XPathResult.STRING_TYPE,null).stringValue;
-			a.appendChild(document.createTextNode(title));
-			console.log(title);
-			this.replaceWith(a);
-		});
-		
-	}
-}
-customElements.define("internal-link",InternalLink);
-
 class FigureImage extends HTMLElement {
 	constructor(){
 		super();
 	}
 }
 //customElements.define("figure-image",FigureImage);
+
+/**/
+class InternalFetch extends HTMLElement {
+	constructor() {
+		super();
+
+		const elem = this;
+		fetch(this.getAttribute("path"))
+		.then((response)=>response.text())
+		.then((data)=>{
+			const arg = {
+				element:elem,
+				name:"internal-fetch",
+				sef:"fetch.sef.json",
+				defaultTemplate:`<yc:content/>`,
+				params:{
+					"path":elem.getAttribute("path"),
+					"target":elem.getAttribute("target"),
+					"template":elem.getAttribute("template"),
+					"document":parser.parseFromString(data,"text/html")
+				}
+			}
+			exec(arg);
+		});
+	}
+}
 
 /*OGPを表示する*/
 class InternalOgp extends HTMLElement {
@@ -189,7 +212,7 @@ class InternalOgp extends HTMLElement {
 			element:this,
 			name:"internal-ogp",
 			sef:"ogp.sef.json",
-			defaultTemplate:`<div><img yc:image="" width="64"/><a yc:url=""><yc:title/></a><div><yc:description/></div></div>`,
+			defaultTemplate:`<div><img yc:src="{image}" width="64"/><a yc:href="{path}"><yc:title/></a><div><yc:description/></div></div>`,
 			params:{
 				"path":this.getAttribute("path")
 			}
