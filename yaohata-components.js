@@ -29,8 +29,7 @@ fetch(setting_loc)
 .then((text)=>{
 	setting = parser.parseFromString(text,"application/xml");
 	sefbase = setting.evaluate("/s:setting/@sefbase",setting,yaohata.nsResolver,XPathResult.STRING_TYPE,null).stringValue;
-	customElements.define("the-description",Description);
-	customElements.define("the-modified",Modified);
+	console.log(sefbase);
 	customElements.define(TwitterButton.name,TwitterButton);
 	customElements.define("facebook-button",FacebookButton);
 	customElements.define("line-button",LineButton);
