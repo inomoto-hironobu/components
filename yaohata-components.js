@@ -224,18 +224,23 @@ class InternalOgp extends HTMLElement {
 class InternalQuote extends HTMLElement {
 	constructor(){
 		super();
-		
-		const arg = {
-			element:this,
-			name:"quote",
-			sef:"quote.sef.json",
-			defaultTemplate:`<blockquote><yc:content/><p><cite><a yc:href="{path}"><yc:title/></a></cite></p></blockquote>`,
-			params:{
-				"path":this.getAttribute("path"),
-				"target":this.getAttribute("target")
+		const elem = this;
+		fetch(this.getAttribute("path"))
+		.then((response)=>response.text())
+		.then((data)=>{
+			const arg = {
+				element:this,
+				name:"quote",
+				sef:"fetch.sef.json",
+				defaultTemplate:`<blockquote><yc:content/><p><cite><a yc:href="{path}"><yc:title/></a></cite></p></blockquote>`,
+				params:{
+					"path":this.getAttribute("path"),
+					"target":this.getAttribute("target"),
+					"document":parser.parseFromString(data,"text/html")
+				}
 			}
-		}
-		exec(arg);
+			exec(arg);
+		});
 	}
 }
 
