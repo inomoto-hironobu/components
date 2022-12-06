@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../SaxonJS2.js"></script>
+<script src="../d3.js"></script>
+<script src="../visualization.js"></script>
+</head>
+<body>
+<div>
+<pie-chart csv="test.csv" col="日付" row="2010" width="600" height="400"/>
+</div>
+<div>
+<bar-graph csv="test.csv" col="消費税収"/>
+</div>
+<div>
+<line-graph csv="test.csv" x="日付" width="600" height="400">
+<line col="所得税収"/>
+</line-graph>
+</div>
+<div class="test">ddd</div>
+<input type="text" id="xpath">
+<button id="evaluate">実行</button>
+<div id="t"></div>
+<template id="v">
+
+</template>
+<script>
+const dataset = [1,2,3];
+d3.select("#t")
+.selectAll("p")
+.data(dataset)
+.enter()
+.append("p")
+.text((d)=>d);
+</script>
+</body>
+</html>
