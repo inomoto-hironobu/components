@@ -99,7 +99,7 @@ class TwitterButton extends HTMLElement {
 				"title":document.querySelector('title').textContent,
 				"text":this.getAttribute("text")
 			}
-		 }
+		 };
 		 exec(arg);
 	}
 	static name = "twitter-button";

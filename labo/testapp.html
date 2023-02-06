@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<meta name="description" content="test.html">
+<link rel="yaohata-components-setting" href="ycs.xml">
+<body>
+<p><meta-content name="description"/></p>
+<p><meta-content name="description" path="a.html"/></p>
+<p><internal-fetch path="a.html" template="link" target="test"/></p>
+<p><internal-link path="a.html"/></p>
+<p><internal-quote path="a.html" target="test"/></p>
+<p><graph-application>
+<test>test222</test>
+</graph-application></p>
+<template id="link">
+<a yc:href="{path}" yc:title="{title}"><yc:title/></a>
+</template>
+<template id="quote">
+<div>
+<yc:content/>
+</div>
+</template>
+<script src="../SaxonJS2.js"></script>
+<script src="../application.js"></script>
+</body>
+</html>

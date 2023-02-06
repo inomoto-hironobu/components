@@ -2,50 +2,46 @@ window.addEventListener("DOMContentLoaded",(e)=>{
     customElements.define("pie-chart",PieChart);
     customElements.define("line-graph",LineGraph);
     customElements.define("bar-graph",BarGraph);
+    //customElements.define("h-bar",HBar);
 });
-
+class HBar extends HTMLElement {
+	constructor() {
+		super();
+		const value = this.getAttribute("value");
+		
+		const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+		const root = d3.select(svg);
+		root
+		.data({value:value})
+		.enter()
+		.append("rect")
+		.attr("x",(d)=>{return 0;})
+		.attr("y",(d)=>{return 0;})
+		.attr("width",(d)=>{
+			
+		})
+		.attr("height",this.getAttribute("height"))
+		.attr("fill","stillblue");
+		this.replaceWith(svg);
+	}
+}
 class PieChart extends HTMLElement {
     constructor() {
         super();
-        const csvPath = this.getAttribute("csv");
-        const col = this.getAttribute("col");
-        const row = this.getAttribute("row");
-        
-        const target = this;
-        d3
-        .csv(csvPath)
-        .then((data)=>{
-            console.log(data);
-            let obj = [];
-            obj.push(data);
-            let xpath = 
-            ".[1]"
-            +"=>array:filter(function($a){$a?"+col+"='"+row+"'})"
-            +"=>array:head()"
-            //{'a':1,'b':2...}から任意の
-            +"=>map:remove('"+col+"')"
-            //[{'name':'a','value':1},{'name':'b','value':2}...
-            +"=>map:for-each(function($a,$b){map{'name':$a,'value':number($b)}})";
-            const dataset = SaxonJS.XPath.evaluate(xpath,obj);
-            console.log(dataset);
-            var width = this.getAttribute("width"); // グラフの幅
-            var height = this.getAttribute("height"); // グラフの高さ
+        const executor = function(arg) {
+			console.log(arg.dataset);
+            var width = arg.width; // グラフの幅
+            var height = arg.height; // グラフの高さ
             var radius = Math.min(width, height) / 2 - 10;
             var color = d3.scaleOrdinal()
             .range(["#DC3912", "#3366CC", "#109618", "#FF9900", "#990099"]);
+            
             const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 
             const circle = d3.select(svg)
             .attr("width", width)
             .attr("height", height)
             .attr("viewBox","0 0 "+width+" "+height);
-            const attributes = target.querySelector("attributes");
-            if(attributes) {
-                for(let name of attributes.getAttributeNames()) {
-                    console.log(target.getAttribute(name));
-                    circle.attr(name,attributes.getAttribute(name));
-                }
-            }
 
             const g = circle.append("g")
             .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
@@ -55,7 +51,7 @@ class PieChart extends HTMLElement {
             .sort(null);
 
             const pieGroup = g.selectAll(".pie")
-            .data(pie(dataset))
+            .data(pie(arg.dataset))
             .enter()
             .append("g")
             .attr("class","pie");
@@ -81,8 +77,68 @@ class PieChart extends HTMLElement {
                 .attr("font", "10px")
                 .attr("text-anchor", "middle")
                 .text(function(d) { return d.data.name; });
-            target.replaceWith(svg);
-        })
+            return svg;
+            
+		};
+        const target = this;
+        //
+        const jsonE = this.querySelector("json");
+        let json = null;
+        console.log(jsonE);
+        if(jsonE) {
+			json = JSON.parse(jsonE.textContent);
+			console.log(json);
+			const arg = {
+				width:this.getAttribute("width"),
+				height:this.getAttribute("height"),
+				dataset:json
+			}
+			const svg = executor(arg);
+			const attributes = target.querySelector("attributes");
+            if(attributes) {
+                for(let name of attributes.getAttributeNames()) {
+                    svg.setAttribute(name,attributes.getAttribute(name));
+                }
+            }
+			target.replaceWith(svg);
+		} else if(this.getAttribute("csv")) {
+			const csvPath = this.getAttribute("csv");
+			const col = this.getAttribute("col");
+        	const row = this.getAttribute("row");
+        	d3
+	        .csv(csvPath)
+	        .then((data)=>{
+	            console.log(data);
+	            let obj = [];
+	            obj.push(data);
+	            let xpath = 
+	            ".[1]"
+	            +"=>array:filter(function($a){$a?"+col+"='"+row+"'})"
+	            +"=>array:head()"
+	            //{'a':1,'b':2...}から任意の
+	            +"=>map:remove('"+col+"')"
+	            //[{'name':'a','value':1},{'name':'b','value':2}...
+	            +"=>map:for-each(function($a,$b){map{'name':$a,'value':number($b)}})";
+	            const dataset = SaxonJS.XPath.evaluate(xpath,obj);
+	            console.log(dataset);
+	            const arg = {
+					width:this.getAttribute("width"),
+					height:this.getAttribute("height"),
+					dataset:dataset
+				}
+	            const svg = executor(arg);
+	            const attributes = target.querySelector("attributes");
+	            if(attributes) {
+	                for(let name of attributes.getAttributeNames()) {
+	                    svg.setAttribute(name,attributes.getAttribute(name));
+	                }
+	            }
+	            target.replaceWith(svg);
+	        })
+		}
+        
+        
+        
     }
 }
 
