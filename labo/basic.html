@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>basic.jsのテスト</title>
+<meta name="description" content="test">
+<link rel="yaohata-components-setting" href="../ycs.xml"/>
+</head>
+<body>
+<p><internal-quote path="a.html" target="test"/></p>
+<p id="test">test</p>
+
+<window-def name="test" value="value"></window-def>
+
+<window-def name="test2" type="dom"><div>value</div></window-def>
+
+<window-def name="test3"><div>value</div></window-def>
+
+<window-ref name="test"></window-ref>
+
+<window-ref name="test2"></window-ref>
+
+<x-path>
+$self/text()
+</x-path>
+
+<window-def name="add" type="string">
+number($self/parent::*/preceding-sibling::td[2]/text()) + number($self/parent::*/preceding-sibling::td[1]/text())
+</window-def>
+<table>
+<tr>
+    <td>1</td>
+    <td>10</td>
+    <td><x-path ref="add"></x-path></td>
+    <td><x-path>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</x-path></td>
+</tr>
+<tr>
+    <td>2</td>
+    <td>30</td>
+    <td><x-path ref="add"></x-path></td>
+    <td><x-path>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</x-path></td>
+</tr>
+<tr><td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[1]
+=>sum()
+</x-path></td>
+<td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[2]
+=>sum()
+</x-path></td><td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[3]//result
+=>sum()
+</x-path>
+<td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[4]//result
+=>sum()
+</x-path></td></td>
+</tr>
+</table>
+
+<the-if xpath=""></the-if>
+
+<json-loop path="test.json">
+<div><val xpath=""/></div>
+</json-loop>
+
+<the-template >
+<text name="test">md-4</text>
+<param name="test2"/>
+<span slot="slot">test</span>
+</the-template>
+
+<saxon-transform stylesheet="" source="">
+<param name="" value=""/>
+</saxon-transform>
+
+<framexs-transform skeleton="" contents="">
+<property name="" value=""/>
+</framexs-transform>
+
+<the-youtube code="iRdsHFP1PWU"></the-youtube>
+
+<universal-template template="youtube">
+<param name="code" type="text"></param>
+</universal-template>
+
+<template id="quote">
+<description/>
+</template>
+
+<template>
+<div yc:class="col {test}">
+<yc:val name="test2"/>
+<slot name="slot">defa</slot>
+</div>
+</template>
+
+<script src="../lib/SaxonJS2.js"></script>
+<script src="../basic.js"></script>
+</body>
+</html>

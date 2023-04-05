@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>basic.jsのテスト</title>
+<meta name="description" content="test">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+
+<window-def name="test" value="value"></window-def>
+<pre id="code1"><code class="language json">
+{
+    "test":"val",
+    "arr":[
+        {
+            "n":"v1",
+            "n2":1
+        },
+        {
+            "n":"v2",
+            "n2":2
+        },
+        {
+            "n":"v3",
+            "n2":3
+        }
+    ],
+    "map":{
+        "test2":"test"
+    }
+}
+</code></pre>
+<window-def name="json" type="string" ref="code1"></window-def>
+
+<pre id="code2"><code class="language xpath">
+    let $json := parse-json($defs?json)
+    return $json?arr?*[?n2 >= 2]?n
+</code></pre>
+
+<console-log type="xpath" ref="code2"></console-log>
+
+<console-log type="xpath">parse-json($defs?json)?arr?*[?n2=1]</console-log>
+
+<console-log type="xpath">
+parse-json($defs?json)?arr?*[?n2>1]?n
+</console-log>
+
+<console-log type="xpath">
+parse-json($defs?json)?*[. instance of map(*) and ?test2]?test2
+</console-log>
+
+<window-def name="add" type="string">
+number($self/parent::*/preceding-sibling::td[2]/text()) + number($self/parent::*/preceding-sibling::td[1]/text())
+</window-def>
+
+<window-lib path="lib.html"></window-lib>
+<table>
+<tr>
+    <td>1</td>
+    <td>10</td>
+    <td><x-path ref="add"></x-path></td>
+    <td><x-path>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</x-path></td>
+</tr>
+<tr>
+    <td>2</td>
+    <td>30</td>
+    <td><x-path ref="add"></x-path></td>
+    <td><x-path>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</x-path></td>
+</tr>
+<tr><td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[1]
+=>sum()
+</x-path></td>
+<td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[2]
+=>sum()
+</x-path></td><td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[3]//result
+=>sum()
+</x-path>
+<td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[4]//result
+=>sum()
+</x-path></td></td>
+</tr>
+</table>
+
+
+<script src="../lib/SaxonJS2.js"></script>
+<script src="../basic.js"></script>
+</body>
+</html>
