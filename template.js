@@ -42,6 +42,7 @@ fetch(setting_loc)
 		customElements.define("facebook-button", FacebookButton);
 		customElements.define("line-button", LineButton);
 		customElements.define("linkedin-button", LinkedInButton);
+		customElements.define("share-buttons", ShareButtons);
 		customElements.define("internal-quote", InternalQuote);
 		customElements.define("internal-fetch", InternalFetch);
 		customElements.define("internal-ogp", InternalOgp);
@@ -50,8 +51,23 @@ fetch(setting_loc)
 	})
 	.catch((data) => console.error(data));
 
-class Template extends HTMLElement {
+class ShareButtons extends HTMLElement {
+	constructor() {
+		super();
 
+		const arg = {
+			element: this,
+			name: "share-buttons",
+			sef: "sns.sef.json",
+			defaultTemplate: ``,
+			params: {
+				"url": document.URL,
+				"title": document.querySelector('title').textContent,
+				"text": this.getAttribute("text")
+			}
+		};
+		exec(arg);
+	}
 }
 class Youtube extends HTMLElement {
 	constructor() {
