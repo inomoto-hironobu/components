@@ -61,9 +61,9 @@ class ShareButtons extends HTMLElement {
 			sef: "sns.sef.json",
 			defaultTemplate: ``,
 			params: {
-				"url": document.URL,
+				"url": encodeURIComponent(document.URL),
 				"title": document.querySelector('title').textContent,
-				"text": this.getAttribute("text")
+				"text": encodeURIComponent(this.getAttribute("text"))
 			}
 		};
 		exec(arg);
