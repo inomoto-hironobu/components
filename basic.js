@@ -1,18 +1,49 @@
 window.defs = {};
 
 window.addEventListener("DOMContentLoaded",(e)=>{
+	customElements.define("the-version", Version);
 	customElements.define("window-def", Definition);
 	customElements.define("window-ref", Reference);
 	customElements.define("x-path", XPath);
 	customElements.define("console-log", ConsoleLog);
+	customElements.define("meta-content", MetaContent);
 });
 
 /*開発中*/
 class Version extends HTMLElement {
 	constructor() {
-		this.replaceWith(document.createTextNode("1.1.0"));
+		this.replaceWith(document.createTextNode("1.2.0"));
 	}
 }
+
+class Title extends HTMLElement {
+
+}
+
+/*meta name="**"の表示*/
+class MetaContent extends HTMLElement {
+	constructor() {
+		super();
+		const elem = this;
+		const value = function (dom) {
+			return dom.evaluate("//meta[@name='" + elem.getAttribute("name") + "']/@content", dom, yaohata.nsResolver, XPathResult.STRING_TYPE, null).stringValue;
+		}
+		const path = this.getAttribute("path");
+		let dom;
+		if (path) {
+			fetch(path)
+				.then((response) => response.text())
+				.then((data) => {
+					//テキストからHTMLをパースし、value関数で値を取得、テキストノードを作り、置き換える
+					this.replaceWith(document.createTextNode(value(parser.parseFromString(data, "text/html"))));
+				});
+		} else {
+			this.replaceWith(document.createTextNode(value(document)));
+		}
+	}
+}
+
+
 class Definition extends HTMLElement {
 	constructor() {
 		super();
@@ -50,6 +81,7 @@ class Definition extends HTMLElement {
 		this.remove();
 	}
 }
+
 class Reference extends HTMLElement {
 	constructor() {
 		super();
@@ -136,6 +168,7 @@ class ConsoleLog extends HTMLElement {
 		this.remove();
 	}
 }
+
 /**
  * SaxonJSのXPath機能を使う
  */
@@ -183,5 +216,21 @@ class XPath extends HTMLElement {
 		
 		//self.replaceWith(result);
 
+	}
+}
+/**/
+class FetchHtml extends HTMLElement {
+	constructor() {
+		super();
+
+		const elem = this;
+		const path = this.getAttribute("path");
+		const target = this.getAttribute("target");
+
+		fetch(this.getAttribute("path"))
+			.then((response) => new DOMParser().parseFromString(response.text(), 'text/html'))
+			.then((html) => {
+				
+			});
 	}
 }
