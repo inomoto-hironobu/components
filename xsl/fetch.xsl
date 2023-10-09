@@ -2,7 +2,6 @@
 <!-- xmlns:tとした場合 -->
 <xsl:stylesheet version="3.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:yc="urn:yaohata-components"
   xmlns:fn="http://www.w3.org/2005/xpath-functions"
   xpath-default-namespace="http://www.w3.org/1999/xhtml">
   <xsl:output method="xml" />
@@ -11,7 +10,7 @@
   <xsl:param name="target"/>
   <xsl:param name="document"/>
 
-  <xsl:template match="@yc:*">
+  <xsl:template match="@*[starts-with(name(), 'yc-')]">
     <xsl:attribute name="{local-name()}">
       <xsl:analyze-string select="." regex="\{{.+?\}}">
         <xsl:matching-substring>
@@ -32,10 +31,10 @@
     </xsl:attribute>
   </xsl:template>
 
-  <xsl:template match="yc:content">
+  <xsl:template match="yc-content">
     <xsl:copy-of select="$document//*[@id=$target]/*"></xsl:copy-of>
   </xsl:template>
-  <xsl:template match="yc:title">
+  <xsl:template match="yc-title">
     <xsl:value-of select="$document/html/head/title"/>
   </xsl:template>
 
