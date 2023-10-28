@@ -9,6 +9,7 @@ window.addEventListener("DOMContentLoaded",(e)=>{
 	customElements.define("saxon-xslt", XSLT);
 	customElements.define("link-url", LinkURL);
 	customElements.define("console-log", ConsoleLog);
+	customElements.define("internal-fetch", InternalFetch);
 });
 
 /*開発中*/
@@ -213,19 +214,29 @@ class XPath extends HTMLElement {
 
 	}
 }
+
 /**/
-class FetchHtml extends HTMLElement {
+class InternalFetch extends HTMLElement {
 	constructor() {
 		super();
-
-		const elem = this;
+		const self = this;
 		const path = this.getAttribute("path");
 		const target = this.getAttribute("target");
-
-		fetch(this.getAttribute("path"))
-			.then((response) => new DOMParser().parseFromString(response.text(), 'text/html'))
-			.then((html) => {
-				
-			});
+		const type = this.getAttribute("type");
+		if(!(path && target && type)) {
+			throw new Error("必須属性が設定されていない");
+		}
+		fetch(path)
+		.then(response=>response.text())
+		.then(text=>{
+			let dom;
+			if(type === "html") {
+				dom = parser.parseFromString(text, "text/html");
+			} else if(type === "xhtml") {
+				dom = parser.parseFromString(text, "application/xhtml+xml");
+			}
+			const elem = dom.getElementById(target);
+			this.replaceWith(elem);
+		});
 	}
 }

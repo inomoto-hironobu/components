@@ -16,12 +16,9 @@ window.addEventListener("DOMContentLoaded", function() {
 	if(yaohata_components_location) {
 		customElements.define("share-buttons", ShareButtons);
 		customElements.define("internal-quote", InternalQuote);
-		customElements.define("html-fetch", HTMLFetch);
-		customElements.define("xhtml-fetch", XHTMLFetch);
-		customElements.define("html-ogp", HTMLOgp);
-		customElements.define("xhtml-ogp", XHTMLOgp);
+		
+		customElements.define("internal-ogp", InternalOgp);
 
-		customElements.define("json-loop", JsonLoop);
 	}
 });
 
@@ -95,38 +92,6 @@ class FigureImage extends HTMLElement {
 	}
 }
 //customElements.define("figure-image",FigureImage);
-
-/**/
-class HTMLFetch extends HTMLElement {
-	constructor() {
-		super();
-		const self = this;
-		const path = this.getAttribute("path");
-		const templatePath = this.getAttribute("template");
-		const type = this.getAttribute("type");
-		if(!(path && template)) {
-			throw new Error("");
-		}
-		const elem = this;
-		fetch(template)
-		.then((response) => response.text())
-		.then((text) => {
-			const template = parser.parseFromString(text, "application/xml");
-
-			fetch(path)
-			.then(response=>response.text())
-			.then(text=>{
-				let dom;
-				if(type === "html") {
-					dom = parser.parseFromString(text, "text/html");
-				} else if(type === "xhtml") {
-					dom = parser.parseFromString(text, "application/xhtml+xml");
-				}
-
-			});
-		});
-	}
-}
 
 /*OGPを表示する*/
 class InternalOgp extends HTMLElement {

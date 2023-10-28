@@ -36,17 +36,25 @@ class PieChart extends HTMLElement {
         super();
         const width = this.getAttribute("width");
         const height = this.getAttribute("height");
-        const col = this.getAttribute("col");
+        const rowName = this.getAttribute("row");
+        const self = this;
         getData(this)
         .then((data)=>{
             console.log(data);
             const header = data[0];
+            const rows = SaxonJS.XPath.evaluate("let $size := array:size(.[1][1]) return array:filter(.[1], function($r) {$r = $rowName})", [data], {params:{rowName:rowName}});
+            console.log(rows);
+            if(rows.length !== 1) {
+                throw new Error("rowsの数："+rows.length);
+            }
+            const row = rows[0].slice(1, rows[0].length);
+            console.log(row);
             var radius = Math.min(width, height) / 2 - 10;
             var color = d3.scaleOrdinal()
             .range(["#DC3912", "#3366CC", "#109618", "#FF9900", "#990099"]);
             
             const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
-
+            attributes(this, svg);
             const circle = d3.select(svg)
             .attr("width", width)
             .attr("height", height)
@@ -56,11 +64,11 @@ class PieChart extends HTMLElement {
             .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
             const pie = d3.pie()
-            .value((d)=>d.value)
+            .value((d)=>{console.log(d); return d;})
             .sort(null);
 
             const pieGroup = g.selectAll(".pie")
-            .data(pie(data[1]))
+            .data(pie(row))
             .enter()
             .append("g")
             .attr("class","pie");
@@ -85,77 +93,9 @@ class PieChart extends HTMLElement {
                 .attr("dy", "5px")
                 .attr("font", "10px")
                 .attr("text-anchor", "middle")
-                .text((d)=>header[d.index]);
-            target.replaceWith(svg);
+                .text((d)=>header[d.index + 1]);
+            self.replaceWith(svg);
         });
-        
-        this.getAttribute("csv");
-        this.getAttribute("json");
-        this.querySelector("xpath");
-
-        const executor = function(arg) {
-			
-            
-		};
-        const target = this;
-        //
-        const jsonE = this.querySelector("json");
-        let json = null;
-        console.log(jsonE);
-        if(jsonE) {
-			json = JSON.parse(jsonE.textContent);
-			console.log(json);
-			const arg = {
-				width:this.getAttribute("width"),
-				height:this.getAttribute("height"),
-				dataset:json
-			}
-			const svg = executor(arg);
-			const attributes = target.querySelector("attributes");
-            if(attributes) {
-                for(let name of attributes.getAttributeNames()) {
-                    svg.setAttribute(name,attributes.getAttribute(name));
-                }
-            }
-			target.replaceWith(svg);
-		} else if(this.getAttribute("csv")) {
-			const csvPath = this.getAttribute("csv");
-			const col = this.getAttribute("col");
-        	const row = this.getAttribute("row");
-        	d3
-	        .csv(csvPath)
-	        .then((data)=>{
-	            console.log(data);
-	            let obj = [];
-	            obj.push(data);
-	            let xpath = 
-	            ".[1]"
-	            +"=>array:filter(function($a){$a?"+col+"='"+row+"'})"
-	            +"=>array:head()"
-	            //{'a':1,'b':2...}から任意の
-	            +"=>map:remove('"+col+"')"
-	            //[{'name':'a','value':1},{'name':'b','value':2}...
-	            +"=>map:for-each(function($a,$b){map{'name':$a,'value':number($b)}})";
-	            const dataset = SaxonJS.XPath.evaluate(xpath, obj);
-	            console.log(dataset);
-	            const arg = {
-					width:this.getAttribute("width"),
-					height:this.getAttribute("height"),
-					dataset:dataset
-				}
-	            const svg = executor(arg);
-	            const attributes = target.querySelector("attributes");
-	            if(attributes) {
-	                for(let name of attributes.getAttributeNames()) {
-	                    svg.setAttribute(name,attributes.getAttribute(name));
-	                }
-	            }
-	            target.replaceWith(svg);
-	        })
-		}
-        
-        
-        
     }
 }
 class BubbleChart extends HTMLElement {
