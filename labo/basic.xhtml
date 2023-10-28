@@ -3,10 +3,10 @@
 <head>
 <title>basic.jsのテスト</title>
 <meta name="description" content="test">
-<link rel="yaohata-components-setting" href="../ycs.xml"/>
+<link rel="yaohata-components-location" href="../"/>
 </head>
 <body>
-
+<p><internal-quote path="a.html" target="test"/></p>
 <p id="test">test</p>
 
 <window-def name="test" value="value"></window-def>
@@ -19,26 +19,25 @@
 
 <window-ref name="test2"></window-ref>
 
-<saxon-xpath>
+<x-path>
 $self/text()
-</saxon-xpath>
+</x-path>
 
 <window-def name="add" type="string">
 number($self/parent::*/preceding-sibling::td[2]/text()) + number($self/parent::*/preceding-sibling::td[1]/text())
 </window-def>
-
 <table>
 <tr>
     <td>1</td>
     <td>10</td>
-    <td><saxon-xpath ref="add"></saxon-xpath></td>
-    <td><saxon-xpath>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</saxon-xpath></td>
+    <td><x-path ref="add"></x-path></td>
+    <td><x-path>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</x-path></td>
 </tr>
 <tr>
     <td>2</td>
     <td>30</td>
-    <td><saxon-xpath ref="add"></saxon-xpath></td>
-    <td><saxon-xpath>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</saxon-xpath></td>
+    <td><x-path ref="add"></x-path></td>
+    <td><x-path>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</x-path></td>
 </tr>
 <tr><td><x-path>
     $self/parent::*/parent::*/preceding-sibling::tr/td[1]
@@ -59,6 +58,16 @@ number($self/parent::*/preceding-sibling::td[2]/text()) + number($self/parent::*
 </table>
 
 <the-if xpath=""></the-if>
+
+<json-loop path="test.json">
+<div><val xpath=""/></div>
+</json-loop>
+
+<the-template >
+<text name="test">md-4</text>
+<param name="test2"/>
+<span slot="slot">test</span>
+</the-template>
 
 <saxon-transform stylesheet="" source="">
 <param name="" value=""/>
@@ -98,13 +107,23 @@ number($self/parent::*/preceding-sibling::td[2]/text()) + number($self/parent::*
 <div><val xpath="?val"></div>
 </json-loop>
 <br/>
-
+<xpath-value>
+//meta[@name = 'description']/@content => string()
+</xpath-value>
 <json-data>
 [
     {"test":"test"},
     {"test2":"test2"}
 ]
 </json-data>
+<template id="link">
+<a yc:href="{path}" yc:title="{title}"><yc:title/></a>
+</template>
+<template id="quote">
+<div>
+<yc:content/>
+</div>
+</template>
 
 <window-def name="test" value="value"></window-def>
 <pre id="code1"><code class="language json">
@@ -153,7 +172,36 @@ number($self/parent::*/preceding-sibling::td[2]/text()) + number($self/parent::*
 </window-def>
 
 <window-lib path="lib.html"></window-lib>
-
+<table>
+<tr>
+    <td>1</td>
+    <td>10</td>
+    <td><x-path ref="add"></x-path></td>
+    <td><x-path>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</x-path></td>
+</tr>
+<tr>
+    <td>2</td>
+    <td>30</td>
+    <td><x-path ref="add"></x-path></td>
+    <td><x-path>2*number($self/parent::*/preceding-sibling::td[1]/x-path/result/text())</x-path></td>
+</tr>
+<tr><td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[1]
+=>sum()
+</x-path></td>
+<td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[2]
+=>sum()
+</x-path></td><td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[3]//result
+=>sum()
+</x-path>
+<td><x-path>
+    $self/parent::*/parent::*/preceding-sibling::tr/td[4]//result
+=>sum()
+</x-path></td></td>
+</tr>
+</table>
 <script src="../lib/SaxonJS2.js"></script>
 <script src="../basic.js"></script>
 </body>

@@ -2,9 +2,12 @@ window.defs = {};
 
 window.addEventListener("DOMContentLoaded",(e)=>{
 	customElements.define("the-version", Version);
+	customElements.define("meta-content", MetaContent);
 	customElements.define("window-def", Definition);
 	customElements.define("window-ref", Reference);
-	customElements.define("x-path", XPath);
+	customElements.define("saxon-xpath", XPath);
+	customElements.define("saxon-xslt", XSLT);
+	customElements.define("link-url", LinkURL);
 	customElements.define("console-log", ConsoleLog);
 });
 
@@ -17,6 +20,14 @@ class Version extends HTMLElement {
 
 class Title extends HTMLElement {
 
+}
+
+/*meta name="**"の表示*/
+class MetaContent extends HTMLElement {
+	constructor() {
+		super();
+		
+	}
 }
 
 class Definition extends HTMLElement {
@@ -67,11 +78,20 @@ class Reference extends HTMLElement {
 		this.replaceWith(window.defs[name]);
 	}
 }
-
-class Framexs extends HTMLElement {
-
+class LinkURL extends HTMLElement {
+	constructor() {
+		super();
+		const a = document.createElement("a");
+		a.setAttribute("href", this.textContent);
+		a.appendChild(document.createTextNode(this.textContent));
+		for (let attr of this.getAttributeNames()) {
+			a.setAttributeNode(attr);
+		}
+		this.replaceWith(a);
+	}
 }
-class SaxonTransfomer extends HTMLElement {
+
+class XSLT extends HTMLElement {
 	constructor() {
 		super();
 		const params = {};
@@ -89,7 +109,7 @@ class SaxonTransfomer extends HTMLElement {
 			destination: "document"
 		};
 		SaxonJS.transform(options,"async").then(d=>{
-
+			
 		});
 	}
 }
