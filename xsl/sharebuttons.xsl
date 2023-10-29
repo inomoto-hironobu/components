@@ -8,12 +8,11 @@
   <xsl:output method="xml" />
 
   <xsl:param name="param"/>
-  
   <xsl:template match="yc:val" mode="#default">
     <xsl:variable name="name" select="@name"/>
     <xsl:value-of select="map:get($param,$name)"/>
   </xsl:template>
-
+  
   <xsl:template match="@*">
     <xsl:attribute name="{name()}">
       <xsl:analyze-string select="." regex="#\{{.+?\}}">

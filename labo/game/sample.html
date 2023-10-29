@@ -1,0 +1,65 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:t="urn:template">
+<head>
+<script src="../SaxonJS2.js"></script>
+
+</head>
+<body>
+<p>
+<my-component />
+</p>
+<game-component/>
+<template id="template">
+<div>
+<my-button id="button">Button</my-button>
+</div>
+</template>
+<template id="game-template">
+    <style>
+        :host > div {
+          display: flex;
+          flex-direction: row;
+        }
+
+        .game-info {
+          margin-left: 20px;
+        }
+      </style>
+      <div>
+        <div>
+            <div>
+                <div class="board-row">
+                  <square-component></square-component>
+                  <square-component></square-component>
+                  <square-component></square-component>
+                </div>
+                <div class="board-row">
+                  <square-component></square-component>
+                  <square-component></square-component>
+                  <square-component></square-component>
+                </div>
+                <div class="board-row">
+                  <square-component></square-component>
+                  <square-component></square-component>
+                  <square-component></square-component>
+                </div>
+              </div>
+        </div>
+        <div class="game-info">
+          <div></div>
+          <ol></ol>
+        </div>
+      </div>
+</template>
+<template id="board-template">
+    <style>
+        .board-row:after {
+          clear: both;
+          content: "";
+          display: table;
+        }
+      </style>
+      
+</template>
+<script type="module" src="script.js"></script>
+</body>
+</html>
