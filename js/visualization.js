@@ -54,13 +54,13 @@ class PieChart extends HTMLElement {
             .range(["#DC3912", "#3366CC", "#109618", "#FF9900", "#990099"]);
             
             const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
-            attributes(this, svg);
-            const circle = d3.select(svg)
+            attributes(self, svg);
+            const main = d3.select(svg)
             .attr("width", width)
             .attr("height", height)
             .attr("viewBox","0 0 "+width+" "+height);
 
-            const g = circle.append("g")
+            const g = main.append("g")
             .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
             const pie = d3.pie()
@@ -102,107 +102,117 @@ class BubbleChart extends HTMLElement {
     constructor() {
         super();
         // グラフの設定
-    const margin = { top: 20, right: 30, bottom: 40, left: 40 };
-    const width = 600 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
+        const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+        const width = 600 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+        const self = this;
+        getData(this)
+        .then((data)=>{
+            console.log(data);
+            const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+            attributes(self, svg);
+            // SVG要素を作成
+            const main = d3.select(svg)
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // SVG要素を作成
-    const svg = d3.select('#chart')
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
+            // データの日付をパース
+            const parseDate = d3.timeParse('%Y-%m-%d');
+            data.forEach(d => {
+                d.date = parseDate(d.date);
+            });
 
-    // データの日付をパース
-    const parseDate = d3.timeParse('%Y-%m-%d');
-    data.forEach(d => {
-        d.date = parseDate(d.date);
-    });
+            // x軸のスケール
+            const x = d3.scaleTime()
+                .domain(d3.extent(data, d => d.date))
+                .range([0, width]);
 
-    // x軸のスケール
-    const x = d3.scaleTime()
-        .domain(d3.extent(data, d => d.date))
-        .range([0, width]);
+            // y軸のスケール
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.value)])
+                .nice()
+                .range([height, 0]);
 
-    // y軸のスケール
-    const y = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.value)])
-        .nice()
-        .range([height, 0]);
+            // ラインジェネレータ
+            const line = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.value));
 
-    // ラインジェネレータ
-    const line = d3.line()
-        .x(d => x(d.date))
-        .y(d => y(d.value));
+            // ラインを描画
+            main.append('path')
+                .datum(data)
+                .attr('class', 'line')
+                .attr('d', line);
 
-    // ラインを描画
-    svg.append('path')
-        .datum(data)
-        .attr('class', 'line')
-        .attr('d', line);
+            // x軸の描画
+            main.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x));
 
-    // x軸の描画
-    svg.append('g')
-        .attr('class', 'x-axis')
-        .attr('transform', `translate(0,${height})`)
-        .call(d3.axisBottom(x));
-
-    // y軸の描画
-    svg.append('g')
-        .attr('class', 'y-axis')
-        .call(d3.axisLeft(y));
+            // y軸の描画
+            main.append('g')
+                .attr('class', 'y-axis')
+                .call(d3.axisLeft(y));
+        });
     }
 }
 class RaderChart extends HTMLElement {
     constructor() {
+        super();
         // グラフの設定
         const width = 400;
         const height = 400;
         const margin = { top: 20, right: 20, bottom: 20, left: 20 };
         const radius = Math.min(width, height) / 2 - Math.max(margin.top, margin.bottom);
-
-        // SVG要素を作成
-        const svg = d3.select('#chart')
-            .append('svg')
+        const self = this;
+        getData(this)
+        .then((data)=>{
+            console.log(data);
+            const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+            attributes(self, svg);
+            // SVG要素を作成
+            const main = d3.select(svg)
             .attr('width', width)
             .attr('height', height)
             .append('g')
             .attr('transform', `translate(${width / 2},${height / 2})`);
 
-        // レーダーチャートの角度スケール
-        const angleScale = d3.scalePoint()
+            // レーダーチャートの角度スケール
+            const angleScale = d3.scalePoint()
             .range([0, 2 * Math.PI])
             .domain(data.map(d => d.category));
 
-        // レーダーチャートの半径スケール
-        const radiusScale = d3.scaleLinear()
+            // レーダーチャートの半径スケール
+            const radiusScale = d3.scaleLinear()
             .domain([0, d3.max(data, d => d.value)])
             .range([0, radius]);
 
-        // レーダーチャートのパスを生成
-        const radarLine = d3.lineRadial()
+            // レーダーチャートのパスを生成
+            const radarLine = d3.lineRadial()
             .curve(d3.curveLinearClosed)
             .angle(d => angleScale(d.category))
             .radius(d => radiusScale(d.value));
 
-        // レーダーチャートの背景円を描画
-        svg.selectAll('.radar-circle')
+            // レーダーチャートの背景円を描画
+            main.selectAll('.radar-circle')
             .data([1, 2, 3, 4, 5])
             .enter()
             .append('circle')
             .attr('class', 'radar-circle')
             .attr('r', d => radius * (d / 5));
 
-        // レーダーチャートのデータパスを描画
-        svg.append('path')
+            // レーダーチャートのデータパスを描画
+            main.append('path')
             .datum(data)
             .attr('class', 'radar-path')
             .attr('d', radarLine)
             .attr('fill', 'rgba(0, 0, 255, 0.5)');
 
-        // カテゴリーラベルを描画
-        svg.selectAll('.category-label')
+            // カテゴリーラベルを描画
+            main.selectAll('.category-label')
             .data(data)
             .enter()
             .append('text')
@@ -210,6 +220,10 @@ class RaderChart extends HTMLElement {
             .text(d => d.category)
             .attr('x', 10)
             .attr('y', -10);
+
+            this.replaceWith(svg);
+        });
+        
     }
 }
 class CandlestickChart extends HTMLElement {
@@ -219,25 +233,28 @@ class CandlestickChart extends HTMLElement {
         const width = 800;
         const height = 400;
         const margin = { top: 20, right: 20, bottom: 40, left: 40 };
-
-        // SVG要素を作成
-        const svg = d3.select('#chart')
+        getData(this)
+        .then((data)=>{
+            console.log(data);
+            const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+            // SVG要素を作成
+            const main = d3.select(svg)
             .append('svg')
             .attr('width', width)
             .attr('height', height);
 
-        // レンジのスケール設定
-        const xScale = d3.scaleTime()
+            // レンジのスケール設定
+            const xScale = d3.scaleTime()
             .domain(d3.extent(data, d => d.date))
             .range([margin.left, width - margin.right]);
 
-        const yScale = d3.scaleLinear()
+            const yScale = d3.scaleLinear()
             .domain([d3.min(data, d => d.low), d3.max(data, d => d.high)])
             .nice()
             .range([height - margin.bottom, margin.top]);
 
-        // キャンドルスティックを描画
-        svg.selectAll('line')
+            // キャンドルスティックを描画
+            main.selectAll('line')
             .data(data)
             .enter()
             .append('line')
@@ -247,7 +264,7 @@ class CandlestickChart extends HTMLElement {
             .attr('y2', d => yScale(d.low))
             .attr('stroke', 'black');
 
-        svg.selectAll('rect')
+            main.selectAll('rect')
             .data(data)
             .enter()
             .append('rect')
@@ -257,17 +274,21 @@ class CandlestickChart extends HTMLElement {
             .attr('height', d => Math.abs(yScale(d.open) - yScale(d.close)))
             .attr('fill', d => (d.open > d.close) ? 'red' : 'green');
 
-        // x軸の描画
-        svg.append('g')
+            // x軸の描画
+            main.append('g')
             .attr('class', 'x-axis')
             .attr('transform', `translate(0,${height - margin.bottom})`)
             .call(d3.axisBottom(xScale));
 
-        // y軸の描画
-        svg.append('g')
+            // y軸の描画
+            main.append('g')
             .attr('class', 'y-axis')
             .attr('transform', `translate(${margin.left},0)`)
             .call(d3.axisLeft(yScale));
+
+            this.replaceWith(this);
+        });
+        
     }
 }
 class DistributionChart extends HTMLElement {
@@ -340,15 +361,19 @@ class LineGraph extends HTMLElement {
         }
         const labelx = this.getAttribute("labelx");
         const labely = this.getAttribute("labely");
-
+        const self = this;
         getData(this)
         .then(data=>{
             var margin = { "top": 30, "bottom": 60, "right": 30, "left": 60 };
             var color = d3.scaleOrdinal()
             .range(["#DC3912", "#3366CC", "#109618", "#FF9900", "#990099"]);
             const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+            attributes(self, svg);
             // 2. SVG領域の設定
-            const main = d3.select(svg).attr("width", width).attr("height", height);
+            const main = d3.select(svg)
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", `0 0 ${width} ${height}`);
     
             // 3. 軸スケールの設定
             var xScale = d3.scaleLinear()
@@ -437,48 +462,54 @@ class BarGraph extends HTMLElement {
         const margin = { top: 20, right: 30, bottom: 40, left: 40 };
         const width = 600 - margin.left - margin.right;
         const height = 400 - margin.top - margin.bottom;
+        getData(this)
+        .then((data)=>{
+            console.log(data);
+            const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+            // SVG要素を作成
+            const main = d3.select(svg)
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
 
-        // SVG要素を作成
-        const svg = d3.select('#chart')
-            .append('svg')
-            .attr('width', width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom)
-            .append('g')
-            .attr('transform', `translate(${margin.left},${margin.top})`);
+            // x軸のスケール
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.label))
+                .range([0, width])
+                .padding(0.1);
 
-        // x軸のスケール
-        const x = d3.scaleBand()
-            .domain(data.map(d => d.label))
-            .range([0, width])
-            .padding(0.1);
+            // y軸のスケール
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.value)])
+                .nice()
+                .range([height, 0]);
 
-        // y軸のスケール
-        const y = d3.scaleLinear()
-            .domain([0, d3.max(data, d => d.value)])
-            .nice()
-            .range([height, 0]);
+            // バーチャートの描画
+            main.selectAll('.bar')
+                .data(data)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.label))
+                .attr('y', d => y(d.value))
+                .attr('width', x.bandwidth())
+                .attr('height', d => height - y(d.value));
 
-        // バーチャートの描画
-        svg.selectAll('.bar')
-            .data(data)
-            .enter()
-            .append('rect')
-            .attr('class', 'bar')
-            .attr('x', d => x(d.label))
-            .attr('y', d => y(d.value))
-            .attr('width', x.bandwidth())
-            .attr('height', d => height - y(d.value));
+            // x軸の描画
+            main.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x));
 
-        // x軸の描画
-        svg.append('g')
-            .attr('class', 'x-axis')
-            .attr('transform', `translate(0,${height})`)
-            .call(d3.axisBottom(x));
+            // y軸の描画
+            main.append('g')
+                .attr('class', 'y-axis')
+                .call(d3.axisLeft(y));
 
-        // y軸の描画
-        svg.append('g')
-            .attr('class', 'y-axis')
-            .call(d3.axisLeft(y));
+            this.replaceWith(svg);
+        });
+        
     }
 }
 class ChartRace extends HTMLElement {
@@ -748,7 +779,7 @@ async function getData(element) {
         }
         dataString = await d3.text(element.getAttribute("src"));
     } else {
-        throw new Error("");
+        throw new Error("適切な値が設定されていない");
     }
 
     if(!dataString && !type) {
