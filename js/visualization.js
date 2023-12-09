@@ -405,7 +405,12 @@ class LineGraph extends HTMLElement {
                 .attr("fill", "none")
                 .attr("stroke", (d)=>color(i))
                 .attr("stroke-width", 1.5)
-                .attr("d", line);
+                .attr("d", d3.line()
+                    .x((d)=>xScale(d[0]))
+                    .y((d)=>{
+                        return yScale(d[i]); 
+                    })
+                );
 
                 // ラベルを表示する位置のオフセット
                 const labelOffsetX = 10;
@@ -420,6 +425,7 @@ class LineGraph extends HTMLElement {
                     .text(d => name)
                     .attr("fill", (d, i) => d3.schemeCategory10[i]);
             }
+            
             main.append("g")
                 .attr("transform", "translate(" + 0 + "," + (height - margin.bottom) + ")")
                 .call(axisx)

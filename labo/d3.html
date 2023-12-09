@@ -1,0 +1,70 @@
+<html>
+<head>
+<meta charset="utf8">
+</head>
+<body>
+<div id="canvas"></div>
+<script src="../lib/d3.js"></script>
+<script>
+
+const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+const main = d3.select(svg)
+    .attr("width", 400)
+    .attr("height", 400)
+    .attr("viewBox", `0 0 400 400`);
+
+var xScale = d3.scaleLinear()
+.domain([0, 10])
+.range([30, 370]);
+
+var yScale = d3.scaleLinear()
+.domain([5, 25])
+.range([370, 30]);
+const table = [
+    ['年代','消費税','その他'],
+    ['2010',20,10],
+    ['2015',30,20]
+]
+const header = table.slice(0,1);
+const data = table.slice(1,table.length);
+console.log(data);
+
+for(let i = 1; i < data[0].length; i++) {
+    const name = header[i];
+    console.log(name);
+
+    const line = d3.line()
+    .x((d,j)=>{
+        console.log(j);
+        console.log(d);
+        return j;
+    })
+    .y((d)=>{
+        console.log(d);
+    });
+    
+    // 5. ラインの表示
+    main.append("path")
+    .datum(data)
+    .attr("fill", "none")
+    .attr("stroke", (d)=>{console.log(d)})
+    .attr("stroke-width", 1.5)
+    .attr("d", line);
+
+    // ラベルを表示する位置のオフセット
+    const labelOffsetX = 10;
+    const labelOffsetY = 10;
+
+    // ラベルを描画
+    main.append("text")
+        .datum(data)
+        .attr("x", d => xScale(d[data.length - 1][0]) + labelOffsetX)
+        .attr("y", d => yScale(d[data.length - 1][i]) + labelOffsetY)
+        .attr("font-size", "12px")
+        .text(d => name)
+        .attr("fill", (d, i) => d3.schemeCategory10[i]);
+}
+</script>
+
+</body>
+</html>

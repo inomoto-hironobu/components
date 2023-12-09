@@ -1,12 +1,11 @@
-const yaohata = {};
-
 const parser = new DOMParser();
 
-const yaohata_components_location = SaxonJS.XPath.evaluate("//link[@rel='yaohata-components-location']/@href",document,{
+const yaohata_components_location_href = SaxonJS.XPath.evaluate("//link[@rel='yaohata-components-location']/@href",document,{
 	xpathDefaultNamespace: "http://www.w3.org/1999/xhtml"
-}).value
-
-if(yaohata_components_location) {
+})
+let yaohata_components_location;
+if(yaohata_components_location_href) {
+	yaohata_components_location = yaohata_components_location_href.value;
 	console.log("yaohata_components_location:"+yaohata_components_location);
 } else {
 	console.error("yaohata_components_location is not defined.");
@@ -21,52 +20,59 @@ window.addEventListener("DOMContentLoaded", function() {
 
 	}
 });
-
-class ShareButtons extends HTMLElement {
+class UtilityRendering extends HTMLElement {
 	constructor() {
 		super();
-
 		if(this.getAttribute("template")) {
 			fetch(this.getAttribute("template"))
 			.then(response => response.text())
 			.then(data => {
-				const template = parser.parseFromString(data, 'application/xml');
-				const params = {
+
+			});
+		}
+	}
+}
+class ShareButtons extends HTMLElement {
+	constructor() {
+		super();
+		const self = this;
+		template(this)
+		.then(template=>{
+			const params = {
+				params:{
 					"url": encodeURIComponent(document.URL),
 					"title": document.querySelector('title').textContent,
 					"text": encodeURIComponent(this.getAttribute("text"))
 				}
-				const options = {
-					stylesheetLocation: yaohata_components_location + '/sef/share-buttons.sef.json',
-					//template要素はからのためcontentプロパティでDocumentFragmentを取得する
-					sourceNode: template,
-					stylesheetParams: params,
-					destination: "document"
-				};
-			
-				SaxonJS.transform(options, "async")
-				.then(d => {
-					console.log(d);
-					const f = document.createDocumentFragment();
-					d.principalResult.childNodes.forEach((e)=>{
-						f.append(e.cloneNode(true));
-					});
-					this.replaceWith(f);
-				}).catch(v => {
-					console.log(v);
-				});
+			}
+			transform(template, params)
+			.then(f=>{
+				self.replaceWith(f);
+			}).catch(v => {
+				console.log(v);
 			});
-		} else {
-			console.error("template is not exists");
-		}
-		
-		
+		});
 	}
 }
 class Youtube extends HTMLElement {
 	constructor() {
 		super();
 		const id = this.getAttribute("id");
+		const self = this;
+		template(this)
+		.then(template=>{
+			const params = {
+				params:{
+					"id": id
+				}
+			}
+			transform(template, params)
+			.then(f=>{
+				self.replaceWith(f);
+			}).catch(v => {
+				console.log(v);
+			});
+		});
 	}
 }
 
@@ -102,7 +108,7 @@ class InternalOgp extends HTMLElement {
 		const path = this.getAttribute("path");
 		const templatePath = this.getAttribute("template");
 		const type = this.getAttribute("type");
-		if(!(path && template)) {
+		if(!(path && templatePath)) {
 			throw new Error("");
 		}
 		fetch(templatePath)
@@ -182,7 +188,7 @@ class InternalSource extends HTMLElement {
 		exec(arg);
 	}
 }
-async function transform(template,params) {
+async function transform(template, params) {
 	const options = {
 		stylesheetLocation: yaohata_components_location + '/sef/template.sef.json',
 		sourceNode: template,
@@ -197,6 +203,41 @@ async function transform(template,params) {
 		f.append(e.cloneNode(true));
 	});
 	return f
+}
+async function template(element) {
+	const templatePath = element.getAttribute("template");
+	let path;
+	let target;
+	if(templatePath.indexOf('#') !== -1) {
+		const words = templatePath.split('#');
+		if(words.length === 2) {
+			path = words[0];
+			target = words[1];
+		} else {
+			throw new Error("invalidなパス："+templatePath);
+		}
+	} else {
+		path = templatePath;
+	}
+	const response = await fetch(path);
+	if(response.status !== 200) {
+		throw new Error(response);
+	}
+	const text = await response.text();
+	console.log(text);
+	const xml = parser.parseFromString(text, "application/xml");
+	let template;
+	if(!target && SaxonJS.XPath.evaluate("namespace-uri(/*) = 'yaohata-components' and local-name(/*) = 'template'", xml)) {
+		template = xml.documentElement;
+	} else if(target && SaxonJS.XPath.evaluate("namespace-uri(/*) = 'yaohata-components' and local-name(/*) = 'templates'", xml)) {
+		template = SaxonJS.XPath.evaluate("/yc:templates/yc:template[@name=$name][1]", xml, {
+			namespaceContext:{yc:'yaohata-components'},
+			params:{name: target}
+		});
+	} else {
+		throw new Error("xml is not valid."+xml.documentElement.nodeName);
+	}
+	return template;
 }
 
 function exec(arg) {

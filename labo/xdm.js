@@ -16,3 +16,11 @@ const data2 = {
 }
 xdm = SaxonJS.XPath.evaluate('array:size(.?data[1])', data2);
 console.log(xdm);
+
+fetch("share.xml")
+.then(response=>response.text())
+.then(text=>{
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, "application/xml");
+    console.log(SaxonJS.XPath.evaluate("namespace-uri(/*) = 'yaohata-components' and local-name(/*) = 'template'", xml));
+})
