@@ -1,14 +1,3 @@
-window.addEventListener("DOMContentLoaded",(e)=>{
-    customElements.define("pie-chart",PieChart);
-    customElements.define("line-graph",LineGraph);
-    customElements.define("bar-graph",BarGraph);
-    customElements.define("bubble-chart", BubbleChart);
-    customElements.define("rader-chart", RaderChart);
-    customElements.define("candlestick-chart", CandlestickChart);
-    customElements.define("stackedbar-chart", Stackedbarchart);
-    //customElements.define("h-bar",HBar);
-});
-
 class HBar extends HTMLElement {
 	constructor() {
 		super();
@@ -32,39 +21,73 @@ class HBar extends HTMLElement {
 }
 
 class PieChart extends HTMLElement {
+
     constructor() {
         super();
-        const width = this.getAttribute("width");
-        const height = this.getAttribute("height");
-        const rowName = this.getAttribute("row");
-        const self = this;
+        this.shadow = this.attachShadow({mode:"open"});
+        this.width = this.getAttribute("width");
+        this.height = this.getAttribute("height");
+        this.rowName = this.getAttribute("row");
+        if(this.getAttribute("total")) {
+			this.total = Number.parseFloat(this.getAttribute("total"));
+		}
+        if(this.getAttribute("threshold")) {
+			this.threshold = Number.parseFloat(this.getAttribute("threshold"));
+		}
+        
+        this.exec();
+    }
+	static get observedAttributes() {
+		return ["src"];
+	}
+    attributeChangedCallback(attr, oldVal, newVal) {
+		console.log("changed");
+        this.width = this.getAttribute("width");
+        this.height = this.getAttribute("height");
+        this.rowName = this.getAttribute("row");
+        if(this.getAttribute("total")) {
+			this.total = Number.parseFloat(this.getAttribute("total"));
+		}
+        if(this.getAttribute("threshold")) {
+			this.threshold = Number.parseFloat(this.getAttribute("threshold"));
+		}
+		this.exec();
+	}
+	exec() {
+		this.shadow.childNodes.forEach(n=>this.shadow.removeChild(n));
+		console.log(this);
         getData(this)
         .then((data)=>{
             console.log(data);
             const header = data[0];
-            const rows = SaxonJS.XPath.evaluate("let $size := array:size(.[1][1]) return array:filter(.[1], function($r) {$r = $rowName})", [data], {params:{rowName:rowName}});
-            console.log(rows);
-            if(rows.length !== 1) {
-                throw new Error("rowsの数："+rows.length);
-            }
-            const row = rows[0].slice(1, rows[0].length);
+            let row;
+            if(this.rowName) {
+				let rows = SaxonJS.XPath.evaluate("let $size := array:size(.[1][1]) return array:filter(.[1], function($r) {$r = $rowName})", [data], {params:{rowName:rowName}});
+				console.log(rows);
+	            if(rows.length !== 1) {
+	                throw new Error("rowsの数："+rows.length);
+	            }
+	            row = rows[0].slice(1, rows[0].length);
+			} else {
+				row = data[1].slice(1, data[1].length);
+			}
             console.log(row);
-            var radius = Math.min(width, height) / 2 - 10;
+            var radius = Math.min(this.width, this.height) / 2 - 10;
             var color = d3.scaleOrdinal()
             .range(["#DC3912", "#3366CC", "#109618", "#FF9900", "#990099"]);
             
             const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
-            attributes(self, svg);
+            attributes(this, svg);
             const main = d3.select(svg)
-            .attr("width", width)
-            .attr("height", height)
-            .attr("viewBox","0 0 "+width+" "+height);
+            .attr("width", this.width)
+            .attr("height", this.height)
+            .attr("viewBox","0 0 "+this.width+" "+this.height);
 
             const g = main.append("g")
-            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+            .attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
 
             const pie = d3.pie()
-            .value((d)=>{console.log(d); return d;})
+            .value((d)=>{ return d;})
             .sort(null);
 
             const pieGroup = g.selectAll(".pie")
@@ -86,17 +109,24 @@ class PieChart extends HTMLElement {
                 .attr("fill", (d)=>color(d.index))
                 .attr("opacity", 0.75)
                 .attr("stroke", "white");
-            
+                
             pieGroup.append("text")
                 .attr("fill", "black")
                 .attr("transform", function(d) { return "translate(" + text.centroid(d) + ")"; })
                 .attr("dy", "5px")
                 .attr("font", "10px")
                 .attr("text-anchor", "middle")
-                .text((d)=>header[d.index + 1]);
-            self.replaceWith(svg);
+                .text((d)=>{
+					if(this.threshold !== undefined && (d.value / this.total) > this.threshold) {
+						return header[d.index + 1];
+					} else {
+						return '';
+					}
+				});
+			this.shadow.append(svg);
         });
-    }
+	}
+	
 }
 class BubbleChart extends HTMLElement {
     constructor() {
@@ -764,6 +794,7 @@ async function getData(element) {
     let type;
     
     const dataElement = element.querySelector("data");
+
     if(dataElement && dataElement.getAttribute("type")) {
         dataString = dataElement.textContent;
         switch(dataElement.getAttribute("type")) {
@@ -773,19 +804,23 @@ async function getData(element) {
             case "csv":
                 type = "csv";
                 break;
+            default:
+				throw new Error("");
         }
     } else if(element.getAttribute("src") && element.getAttribute("type")) {
-        switch(element.getAttribute("type")) {
+       switch(element.getAttribute("type")) {
             case "json":
                 type = "json";
                 break;
             case "csv":
                 type = "csv";
                 break;
+            default:
+				throw new Error("");
         }
         dataString = await d3.text(element.getAttribute("src"));
     } else {
-        throw new Error("適切な値が設定されていない");
+        throw new Error("適切な値が設定されていない"+data+""+element);
     }
 
     if(!dataString && !type) {
