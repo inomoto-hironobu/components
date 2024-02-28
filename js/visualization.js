@@ -1,22 +1,77 @@
-class HBar extends HTMLElement {
+function getColor() {
+	return d3.scaleOrdinal(d3.schemeCategory10);
+}
+
+class VBar extends HTMLElement {
 	constructor() {
 		super();
-		const value = this.getAttribute("value");
+		this.shadow = this.attachShadow({mode:"open"});
+	}
+	static get observedAttributes() {
+		return ["notdraw"];
+	}
+    attributeChangedCallback(attr, oldVal, newVal) {
+		console.log("changed");
+		this.notdraw = this.getAttribute("notdraw");
+		if(this.notdraw == null) {
+			this.width = this.getAttribute("width");
+	        this.height = this.getAttribute("height");
+	        this.rowName = this.getAttribute("row");
+	        this.colName = this.getAttribute("col");
+	        this.var = this.getAttribute("var");
+	        if(this.getAttribute("total")) {
+				this.total = Number.parseFloat(this.getAttribute("total"));
+			}
+			this.exec();
+		} else {
+			console.log("not draw");
+		}
+        
+	}
+	index(table,content) {
+		const val = table[0].indexOf(content);
+		if(val == -1) {
+			return null;
+		} else {
+			return val;
+		}
+	}
+	exec() {
+		const baseData = window.ycv[this.var];
+		console.log(baseData);
+		const coredata = [2];
+		coredata[0] = baseData[0].slice(1,baseData[0].length);
+		coredata[1] = baseData[1].slice(1,baseData[1].length);
+		const index = this.index(coredata, this.colName);
 		
 		const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 		const root = d3.select(svg);
+		attributes(this, svg);
+		const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+		//const colors = ["#DC3912", "#3366CC", "#109618", "#FF9900", "#990099"];
+		const color = d3.scaleOrdinal(d3.schemeCategory10).domain(coredata[0]);
+	    console.log(coredata[1]);
+	    console.log(d3.max(coredata[1]));
+	    const x = d3.scaleLinear()
+                .domain([0, d3.max(coredata[1], d => d3.sum(d))])
+	            .nice()
+	            .range([margin.left, this.width - margin.right]);
+	   	console.log(x(coredata[1][index]));
+	   	console.log(index);
+	   	
+	   	
+	   	let v = color(this.colName);
+	   	console.log(v);
 		root
-		.data({value:value})
-		.enter()
+		.attr('width', this.width)
+        .attr('height', this.height)
 		.append("rect")
-		.attr("x",(d)=>{return 0;})
-		.attr("y",(d)=>{return 0;})
-		.attr("width",(d)=>{
-			
-		})
-		.attr("height",this.getAttribute("height"))
-		.attr("fill","stillblue");
-		this.replaceWith(svg);
+		.attr("x",0)
+		.attr("y",0)
+		.attr("width",(d)=>x(coredata[1][index]))
+		.attr("height",this.height)
+		.attr("fill",v);
+		this.shadow.append(svg);
 	}
 }
 
@@ -24,7 +79,9 @@ class PieChart extends HTMLElement {
 
     constructor() {
         super();
+        
         this.shadow = this.attachShadow({mode:"open"});
+        /*
         this.width = this.getAttribute("width");
         this.height = this.getAttribute("height");
         this.rowName = this.getAttribute("row");
@@ -35,7 +92,7 @@ class PieChart extends HTMLElement {
 			this.threshold = Number.parseFloat(this.getAttribute("threshold"));
 		}
         
-        this.exec();
+        this.exec();*/
     }
 	static get observedAttributes() {
 		return ["src"];
@@ -54,79 +111,87 @@ class PieChart extends HTMLElement {
 		this.exec();
 	}
 	exec() {
-		this.shadow.childNodes.forEach(n=>this.shadow.removeChild(n));
-		console.log(this);
-        getData(this)
-        .then((data)=>{
-            console.log(data);
-            const header = data[0];
-            let row;
-            if(this.rowName) {
-				let rows = SaxonJS.XPath.evaluate("let $size := array:size(.[1][1]) return array:filter(.[1], function($r) {$r = $rowName})", [data], {params:{rowName:rowName}});
-				console.log(rows);
-	            if(rows.length !== 1) {
-	                throw new Error("rowsの数："+rows.length);
-	            }
-	            row = rows[0].slice(1, rows[0].length);
-			} else {
-				row = data[1].slice(1, data[1].length);
-			}
-            console.log(row);
-            var radius = Math.min(this.width, this.height) / 2 - 10;
-            var color = d3.scaleOrdinal()
-            .range(["#DC3912", "#3366CC", "#109618", "#FF9900", "#990099"]);
-            
-            const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
-            attributes(this, svg);
-            const main = d3.select(svg)
-            .attr("width", this.width)
-            .attr("height", this.height)
-            .attr("viewBox","0 0 "+this.width+" "+this.height);
 
-            const g = main.append("g")
-            .attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
-
-            const pie = d3.pie()
-            .value((d)=>{ return d;})
-            .sort(null);
-
-            const pieGroup = g.selectAll(".pie")
-            .data(pie(row))
-            .enter()
-            .append("g")
-            .attr("class","pie");
-
-            const text = d3.arc()
-                .outerRadius(radius - 30)
-                .innerRadius(radius - 30);
-            
-            const arc = d3.arc()
-                .outerRadius(radius)
-                .innerRadius(0);
-             
-            pieGroup.append("path")
-                .attr("d", arc)
-                .attr("fill", (d)=>color(d.index))
-                .attr("opacity", 0.75)
-                .attr("stroke", "white");
-                
-            pieGroup.append("text")
-                .attr("fill", "black")
-                .attr("transform", function(d) { return "translate(" + text.centroid(d) + ")"; })
-                .attr("dy", "5px")
-                .attr("font", "10px")
-                .attr("text-anchor", "middle")
-                .text((d)=>{
-					if(this.threshold !== undefined && (d.value / this.total) > this.threshold) {
-						return header[d.index + 1];
-					} else {
-						return '';
-					}
-				});
-			this.shadow.append(svg);
-        });
-	}
+		while(this.shadow.firstChild) {this.shadow.removeChild(this.shadow.firstChild);}
+		console.log(this.shadow);
+		try {
+	        getData(this)
+	        .then((data)=>{
+	            console.log(data);
+	            const header = data[0];
+	            let row;
+	            if(this.rowName) {
+					let rows = SaxonJS.XPath.evaluate(
+						"let $size := array:size(.[1][1])"
+						+" return array:filter(.[1], function($r) {$r = $rowName})"
+						, [data], {params:{rowName:rowName}});
+					console.log(rows);
+		            if(rows.length !== 1) {
+		                throw new Error("rowsの数："+rows.length);
+		            }
+		            row = rows[0].slice(1, rows[0].length);
+				} else {
+					row = data[1].slice(1, data[1].length);
+				}
+				const total = d3.sum(row);
+	            console.log(row);
+	            var radius = Math.min(this.width, this.height) / 2 - 10;
+	            var color = d3.scaleOrdinal(d3.schemeCategory10).domain(header.slice(1, header.length));
+	            
+	            const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	            attributes(this, svg);
+	            const main = d3.select(svg)
+	            .attr("width", this.width)
+	            .attr("height", this.height)
+	            .attr("viewBox","0 0 "+this.width+" "+this.height);
 	
+	            const g = main.append("g")
+	            .attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
+	
+	            const pie = d3.pie()
+	            .value((d)=>{ return d;})
+	            .sort(null);
+	
+	            const pieGroup = g.selectAll(".pie")
+	            .data(pie(row))
+	            .enter()
+	            .append("g")
+	            .attr("class","pie");
+	
+	            const text = d3.arc()
+	                .outerRadius(radius - 30)
+	                .innerRadius(radius - 30);
+	            
+	            const arc = d3.arc()
+	                .outerRadius(radius)
+	                .innerRadius(0);
+	             
+	            pieGroup.append("path")
+	                .attr("d", arc)
+	                .attr("fill", (d)=>color(header[d.index + 1]))
+	                .attr("opacity", 0.75)
+	                .attr("stroke", "white");
+	                
+	            pieGroup.append("text")
+	                .attr("fill", "black")
+	                .attr("transform", function(d) { return "translate(" + text.centroid(d) + ")"; })
+	                .attr("dy", "5px")
+	                .attr("font", "10px")
+	                .attr("text-anchor", "middle")
+	                .text((d)=>{
+						if(this.threshold !== undefined && (d.value / total) > this.threshold) {
+							return header[d.index + 1];
+						} else {
+							return '';
+						}
+					});
+				this.shadow.append(svg);
+	        });
+        } catch(e) {
+			console.log(e);
+		}
+	}
+
 }
 class BubbleChart extends HTMLElement {
     constructor() {
@@ -641,77 +706,182 @@ class ChartRace extends HTMLElement {
         .call(g => g.select("tspan").tween("text", d => textTween((prev.get(d) || d).value, d.value))));
     }
 }
-class Stackedbarchart extends HTMLElement {
+class StackedbarChart extends HTMLElement {
     constructor() {
         super();
-        // チャートのサイズとマージンを定義
-        const width = 600;
-        const height = 400;
-        const margin = { top: 20, right: 30, bottom: 40, left: 40 };
-
-        // チャートのSVG要素を作成
-        const svg = d3.select("#chart-container")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height);
-
-        // サンプルデータ
-        const data = [
-            { category: "A", values: [30, 40, 10] },
-            { category: "B", values: [20, 50, 25] },
-            { category: "C", values: [10, 30, 60] }
-        ];
-
-        // スケールの設定
-        const xScale = d3.scaleBand()
-            .domain(data.map(d => d.category))
-            .range([margin.left, width - margin.right])
-            .padding(0.1);
-
-        const yScale = d3.scaleLinear()
-            .domain([0, d3.max(data, d => d3.sum(d.values))])
-            .nice()
-            .range([height - margin.bottom, margin.top]);
-
-        // スタックデータを作成
-        const stack = d3.stack()
-            .keys([0, 1, 2])
-            .order(d3.stackOrderNone)
-            .offset(d3.stackOffsetNone);
-
-        const series = stack(data.map(d => d.values));
-
-        // カラースケールを設定
-        const color = d3.scaleOrdinal()
-            .domain([0, 1, 2])
-            .range(["#1f77b4", "#ff7f0e", "#2ca02c"]);
-
-        // 積み上げ棒グラフを描画
-        svg.selectAll("g")
-            .data(series)
-            .join("g")
-            .attr("fill", (d, i) => color(i))
-            .selectAll("rect")
-            .data(d => d)
-            .join("rect")
-            .attr("x", (d, i) => xScale(data[i].category))
-            .attr("y", d => yScale(d[1]))
-            .attr("height", d => yScale(d[0]) - yScale(d[1]))
-            .attr("width", xScale.bandwidth());
-
-        // X軸を描画
-        svg.append("g")
-            .attr("class", "x-axis")
-            .attr("transform", `translate(0,${height - margin.bottom})`)
-            .call(d3.axisBottom(xScale));
-
-        // Y軸を描画
-        svg.append("g")
-            .attr("class", "y-axis")
-            .attr("transform", `translate(${margin.left},0)`)
-            .call(d3.axisLeft(yScale));
+        console.log("const");
+        this.shadow = this.attachShadow({mode:"open"});
+        this.width = this.getAttribute("width");
+        this.height = this.getAttribute("height");
+        this.rowName = this.getAttribute("row");
+        if(this.getAttribute("threshold")) {
+			this.threshold = Number.parseFloat(this.getAttribute("threshold"));
+		}
     }
+    h() {
+		this.shadow.childNodes.forEach(n=>this.shadow.removeChild(n));
+		console.log("v");
+		// チャートのサイズとマージンを定義
+        const margin = { top: 20, right: 30, bottom: 40, left: 40 }
+		// チャートのSVG要素を作成
+		const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+        attributes(this, svg);
+        
+		getData(this)
+        .then((data)=>{
+            console.log(data);
+            
+            // スケールの設定
+	        const xScale = d3.scaleBand()
+	            .domain(data.slice(1, data.length).map(d => d[0]))
+	            .range([margin.left, this.width - margin.right])
+	            .padding(0.1);
+	
+	        const yScale = d3.scaleLinear()
+	            .domain([0, d3.max(data, d => d3.sum(d.slice(1, d.length)))])
+	            .nice()
+	            .range([this.height - margin.bottom, margin.top]);
+	
+	        // スタックデータを作成
+	        const stack = d3.stack()
+	            .keys([0, 1, 2])
+	            .order(d3.stackOrderNone)
+	            .offset(d3.stackOffsetNone);
+	
+	        const series = stack(data.map(d => d.slice(1, d.length)));
+	
+	        // カラースケールを設定
+	        var color = d3.scaleOrdinal(d3.schemeCategory10).domain(data[0].slice(1,data[0].length))
+	
+			const main = d3.select(svg)
+            .attr("width", this.width)
+            .attr("height", this.height)
+            .attr("viewBox","0 0 "+this.width+" "+this.height);
+            
+	        // 積み上げ棒グラフを描画
+	        main.selectAll("g")
+	            .data(series)
+	            .join("g")
+	            .attr("fill", (d, i) => color(data[0][i + 1]))
+	            .selectAll("rect")
+	            .data(d => {return d;})
+	            .join("rect")
+	            .attr("x", (d, i) => {return xScale(data[i][0])})
+	            .attr("y", d => yScale(d[1]))
+	            .attr("height", d => {
+					//console.log(d);
+					return yScale(d[0]) - yScale(d[1])})
+	            .attr("width", xScale.bandwidth());
+	
+	        // X軸を描画
+	        main.append("g")
+	            .attr("class", "x-axis")
+	            .attr("transform", `translate(0,${this.height - margin.bottom})`)
+	            .call(d3.axisBottom(xScale));
+	
+	        // Y軸を描画
+	        main.append("g")
+	            .attr("class", "y-axis")
+	            .attr("transform", `translate(${margin.left},0)`)
+	            .call(d3.axisLeft(yScale));
+	        this.shadow.append(svg);
+	     });
+	}
+    v() {
+		while(this.shadow.firstChild) {this.shadow.removeChild(this.shadow.firstChild)}
+		console.log("v");
+		// チャートのサイズとマージンを定義
+        const margin = { top: 20, right: 30, bottom: 40, left: 40 }
+		// チャートのSVG要素を作成
+		const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+        attributes(this, svg);
+        
+		getData(this)
+        .then((data)=>{
+            console.log(data);
+            let coredata = data.slice(1, data.length).map(d=>d.slice(1, d.length));
+            console.log(coredata);
+            // スケールの設定
+            
+            const xScale = d3.scaleLinear()
+	            .domain([0, d3.max(coredata, d => d3.sum(d))])
+	            .nice()
+	            .range([margin.left, this.width - margin.right]);
+	            
+	        const yScale = d3.scaleBand()
+	            .domain(data.slice(1, data.length).map(d => d[0]))
+	            .range([margin.top, this.height - margin.bottom])
+	            .padding(0.1);
+	
+	        // スタックデータを作成
+	        let array = [];
+	        
+	        for(let i = 0; i < data[0].length - 1; i++) {
+				array.push(i);
+			}
+	        const stack = d3.stack()
+	            .keys(array)
+	            .order(d3.stackOrderNone)
+	            .offset(d3.stackOffsetNone);
+	
+	        const series = stack(coredata);
+	
+	        // カラースケールを設定
+	        var color = d3.scaleOrdinal(d3.schemeCategory10).domain(data[0].slice(1,data[0].length))
+	
+			const main = d3.select(svg)
+            .attr("width", this.width)
+            .attr("height", this.height)
+            .attr("viewBox","0 0 "+this.width+" "+this.height);
+            
+	        // 積み上げ棒グラフを描画
+	        main.selectAll("g")
+	            .data(series)
+	            .join("g")
+	            .attr("fill", (d, i) => color(data[0][i + 1]))
+	            .selectAll("rect")
+	            .data(d => d)
+	            .join("rect")
+	            .attr("x", d => xScale(d[0]))
+	            .attr("y", (d, i) => yScale(data[i + 1][0]))
+	            .attr("height", yScale.bandwidth())
+	            .attr("width", d => {
+					return xScale(d[1]) - xScale(d[0])}
+				);
+	
+	        // X軸を描画
+	        main.append("g")
+	            .attr("class", "x-axis")
+	            .attr("transform", `translate(0,${this.height - margin.bottom})`)
+	            .call(d3.axisBottom(xScale));
+	
+	        // Y軸を描画
+	        main.append("g")
+	            .attr("class", "y-axis")
+	            .attr("transform", `translate(${margin.left},0)`)
+	            .call(d3.axisLeft(yScale));
+	        this.shadow.append(svg);
+        });
+    }
+    static get observedAttributes() {
+		return ["src"];
+	}
+    attributeChangedCallback(attr, oldVal, newVal) {
+		console.log("changed");
+        this.width = this.getAttribute("width");
+        this.height = this.getAttribute("height");
+        this.rowName = this.getAttribute("row");
+        if(this.getAttribute("threshold")) {
+			this.threshold = Number.parseFloat(this.getAttribute("threshold"));
+		}
+		if(this.getAttribute("order") == "v") {
+			this.v();
+		} else if(this.getAttribute("order") == "h") {
+			this.h();
+		}
+	}
 }
+
 class StackedareaChart extends HTMLElement {
     constructor() {
         super();
