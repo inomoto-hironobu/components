@@ -47,15 +47,19 @@ class VBar extends HTMLElement {
 		const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 		const root = d3.select(svg);
 		attributes(this, svg);
-		const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+		const margin = { top: 20, right: 40, bottom: 40, left: 40 };
 		//const colors = ["#DC3912", "#3366CC", "#109618", "#FF9900", "#990099"];
 		const color = d3.scaleOrdinal(d3.schemeCategory10).domain(coredata[0]);
 	    console.log(coredata[1]);
-	    console.log(d3.max(coredata[1]));
+	    
+	    const max = d3.max(coredata[1]);
+	    const sum = d3.sum(coredata[1]);
+	    console.log(max);
+	    console.log(sum);
 	    const x = d3.scaleLinear()
-                .domain([0, d3.max(coredata[1], d => d3.sum(d))])
+                .domain([0, max])
 	            .nice()
-	            .range([margin.left, this.width - margin.right]);
+	            .range([0, max/sum*100]);
 	   	console.log(x(coredata[1][index]));
 	   	console.log(index);
 	   	
