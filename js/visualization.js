@@ -14,7 +14,10 @@ class VBar extends HTMLElement {
 		console.log("changed");
 		this.notdraw = this.getAttribute("notdraw");
 		if(this.notdraw == null) {
+			
 			this.width = this.getAttribute("width");
+			//もし設定されていないなら親の幅を適用する
+			if(!this.width) this.width = this.parentElement.offsetWidth;
 	        this.height = this.getAttribute("height");
 	        this.rowName = this.getAttribute("row");
 	        this.colName = this.getAttribute("col");
@@ -59,7 +62,7 @@ class VBar extends HTMLElement {
 	    const x = d3.scaleLinear()
                 .domain([0, max])
 	            .nice()
-	            .range([0, max/sum*100]);
+	            .range([0, max/sum*this.width]);
 	   	console.log(x(coredata[1][index]));
 	   	console.log(index);
 	   	
@@ -716,6 +719,7 @@ class StackedbarChart extends HTMLElement {
         console.log("const");
         this.shadow = this.attachShadow({mode:"open"});
         this.width = this.getAttribute("width");
+        if(!this.width) this.width = this.parentElement.offsetWidth;
         this.height = this.getAttribute("height");
         this.rowName = this.getAttribute("row");
         if(this.getAttribute("threshold")) {
@@ -726,7 +730,7 @@ class StackedbarChart extends HTMLElement {
 		this.shadow.childNodes.forEach(n=>this.shadow.removeChild(n));
 		console.log("v");
 		// チャートのサイズとマージンを定義
-        const margin = { top: 20, right: 30, bottom: 40, left: 40 }
+        const margin = { top: 20, right: 30, bottom: 40, left: 60 }
 		// チャートのSVG要素を作成
 		const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
         attributes(this, svg);
@@ -795,7 +799,7 @@ class StackedbarChart extends HTMLElement {
 		while(this.shadow.firstChild) {this.shadow.removeChild(this.shadow.firstChild)}
 		console.log("v");
 		// チャートのサイズとマージンを定義
-        const margin = { top: 20, right: 30, bottom: 40, left: 40 }
+        const margin = { top: 20, right: 30, bottom: 40, left: 100 }
 		// チャートのSVG要素を作成
 		const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
         attributes(this, svg);
@@ -873,6 +877,7 @@ class StackedbarChart extends HTMLElement {
     attributeChangedCallback(attr, oldVal, newVal) {
 		console.log("changed");
         this.width = this.getAttribute("width");
+        if(!this.width) this.width = this.parentElement.offsetWidth;
         this.height = this.getAttribute("height");
         this.rowName = this.getAttribute("row");
         if(this.getAttribute("threshold")) {
