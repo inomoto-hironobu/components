@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "server": "node index.js",
+    "compile": "xslt3 -t -xsl:xsl/template.xsl -export:sef/template.sef.json -nogo",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "井本拓伸",

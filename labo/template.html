@@ -1,10 +1,60 @@
 <!DOCTYPE html>
 <html>
-<head><title></title></head>
+<head>
+<title></title>
+<link rel="yaohata-components-location" href="../">
+<script src="../lib/SaxonJS2.js"></script>
+<script src="../js/template.js"></script>
+</head>
 <body>
+    <template-test template="share.xml"></template-test>
+    <template-test2 template="templates.xml#share"></template-test2>
+    <template-test3 template="templates.xml#test"></template-test3>
+    <script>
+    class Test extends HTMLElement {
+        constructor() {
+            super();
+            template(this)
+            .then(template=>{
+                console.log(template);
+            });
+        }
+    }
+    class Test2 extends HTMLElement {
+        constructor() {
+            super();
+            template(this)
+            .then(template=>{
+                console.log(template);
+            });
+        }
+    }
+    class Test3 extends HTMLElement {
+        constructor() {
+            super();
+            template(this)
+            .then(template=>{
+                const params = {
+
+                    window:window,
+                    document:document,
+                    params:{
+                        test: "hello"
+                    }
+                }
+                transform(template, params)
+                .then(fragment=>{
+                    console.log(fragment);
+                });
+            });
+        }
+    }
+    //customElements.define("template-test", Test);
+    //customElements.define("template-test2", Test2);
+    customElements.define("template-test3", Test3);
+    </script>
     <share-buttons template="share.xml"></share-buttons>
 
-    <script src="../lib/SaxonJS2.js"></script>
-    <script src="../js/template.js"></script>
+    <internal-ogp path="html_framework.xhtml" template="template.xml" type="xhtml"></internal-ogp>
 </body>
 </html>
