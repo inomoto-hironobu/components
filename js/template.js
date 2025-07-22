@@ -116,6 +116,7 @@ class InternalOgp extends HTMLElement {
 		.then(text => {
 			const template = parser.parseFromString(text, "application/xml");
 
+			
 			fetch(path)
 			.then(response=>response.text())
 			.then(text=>{
@@ -126,7 +127,7 @@ class InternalOgp extends HTMLElement {
 					dom = parser.parseFromString(text, "application/xhtml+xml");
 				}
 
-				const title = SaxonJS.XPath.evaluate("//meta[@property = 'og:title']/@content", dom);
+				const title = SaxonJS.XPath.evaluate("/html/meta[@property = 'og:title']/@content", dom,{ xpathDefaultNamespace : 'http://www.w3.org/1999/xhtml' });
 				const description = SaxonJS.XPath.evaluate("//meta[@property = 'og:description']",dom);
 				const params = {
 					path:path,
