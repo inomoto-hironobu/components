@@ -13,12 +13,17 @@
     <attributes style="max-width:600px;width:100%"/>
     <xpath></xpath>
 </pie-chart>
-<bubble-chart src="税収.csv" type="csv"></bubble-chart>
-<rader-chart src="税収.csv" type="csv"></rader-chart>
-<candlestick-chart src="税収.csv" type="csv"></candlestick-chart>
-<distribution-chart src="税収.csv" type="csv"></distribution-chart>
+
+<stackedbar-chart src="税収.csv" type="csv" order="v" width="400" height="400">
+</stackedbar-chart>
+<stackedbar-chart src="税収.csv" type="csv" order="h" width="400" height="400">
+</stackedbar-chart>
 <script src="../lib/SaxonJS2.js"></script>
 <script src="../lib/d3.js"></script>
 <script src="../js/visualization.js"></script>
+<script>
+console.log("test");
+customElements.define("stackedbar-chart",StackedbarChart);
+</script>
 </body>
 </html>
