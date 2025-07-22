@@ -125,6 +125,8 @@ class InternalOgp extends HTMLElement {
 					dom = parser.parseFromString(text, "text/html");
 				} else if(type === "xhtml") {
 					dom = parser.parseFromString(text, "application/xhtml+xml");
+				} else {
+					dom = parser.parseFromString(text, "text/html");
 				}
 
 				const title = SaxonJS.XPath.evaluate("/html/meta[@property = 'og:title']/@content", dom,{ xpathDefaultNamespace : 'http://www.w3.org/1999/xhtml' });
